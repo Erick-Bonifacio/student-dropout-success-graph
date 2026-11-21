@@ -1,0 +1,5 @@
+janela,distancia,modularidade,comunidades,cobertura,V,V_max_nulo,p,NMI
+1_matricula,Gower,0.672,12,0.999,0.316,0.1,0.001,0.034
+1_matricula,Associação,0.841,16,0.996,0.332,0.101,0.001,0.035
+3_fim_1sem,Gower,0.644,11,0.997,0.463,0.091,0.001,0.077
+3_fim_1sem,Associação,0.821,18,0.991,0.576,0.116,0.001,0.109
