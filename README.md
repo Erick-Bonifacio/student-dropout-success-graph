@@ -26,22 +26,34 @@ pip install -r requirements.txt jupyter
 jupyter notebook quatro_variacoes.ipynb
 ```
 
-`data.csv` precisa estar na mesma pasta do notebook. Roda inteiro em poucos minutos num CPU, sem cache. As saídas vão para `resultados/`.
+`data.csv` precisa estar na mesma pasta do notebook. Roda inteiro em poucos minutos num CPU, sem cache. Os números vão para `resultados/` e as figuras para `figuras/`.
 
 ## Resultados
 
 | Janela | Distância | Leiden: V de Cramér (comunidades) | F1 GraphSAGE | F1 MLP (sem arestas) |
 |--------|-----------|-----------------------------------|--------------|----------------------|
-| 1_matricula | Gower      | 0,32 (12) | 0,69 | 0,68 |
+| 1_matricula | Gower      | 0,32 (12) | 0,68 | 0,68 |
 | 1_matricula | Associação | 0,33 (16) | 0,67 | 0,68 |
 | 3_fim_1sem  | Gower      | 0,46 (11) | 0,86 | 0,86 |
-| 3_fim_1sem  | Associação | 0,58 (18) | 0,86 | 0,86 |
+| 3_fim_1sem  | Associação | 0,58 (18) | 0,86 | 0,87 |
 
 p = 0,001 em todos os testes do Leiden (o menor possível com 1.000 permutações). Comunidades com pelo menos 30 alunos. F1 macro, média das 5 dobras.
 
 Leiden é reprodutível exatamente; os F1 da GNN variam cerca de 0,01 entre máquinas/versões do torch; a conclusão (GNN ≈ MLP) não depende disso.
 
-Números completos em `resultados/leiden_resumo.csv` e `resultados/gnn_resumo.csv`; composição das comunidades em `resultados/leiden_composicao.png`.
+Números completos em `resultados/leiden_resumo.csv` e `resultados/gnn_resumo.csv`.
+
+## Figuras
+
+Em `figuras/`, cada uma em PDF (para o LaTeX, largura 6,3 pol., fonte 9 pt) e PNG 300 dpi. `{janela}` = `1_matricula` ou `3_fim_1sem`; `{distancia}` = `gower` ou `associacao`.
+
+- `01_grafo_comunidades_{janela}_{distancia}`: (a) comunidades do Leiden em bolhas, com nº de alunos; (b) o mesmo grafo pintado por evadiu/formou.
+- `02_mapa_risco_{janela}_{distancia}`: cada aluno com a cor da taxa de evasão da sua comunidade.
+- `03_composicao_{janela}`: fração de evadidos/formados por comunidade, (a) Gower e (b) Associação.
+- `04_perfil_{janela}_{distancia}`: heatmap das variáveis por comunidade, em desvios-padrão da média geral.
+- `05_gower_vs_associacao_{janela}`: para onde vai cada comunidade do Gower na partição da Associação, com o ARI.
+- `06_gnn_f1`: F1 da GraphSAGE, do MLP sem arestas e da logística, nas 4 combinações.
+- `07_gnn_grafo_{janela}_{distancia}`: (a) risco previsto pela GNN fora da dobra; (b) erros da GNN, nas posições da figura 01.
 
 ## Principais achados
 
