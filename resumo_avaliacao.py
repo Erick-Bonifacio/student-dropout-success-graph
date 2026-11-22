@@ -13,21 +13,18 @@ import pandas as pd
 
 warnings.filterwarnings("ignore")
 PASTA = "resultados/avaliacao_unica"
-# só as quatro abordagens em grafo (as referências sem grafo de avaliacao_unica.py ficam fora do resumo)
 ORDEM = ["V1 Gower + Leiden", "V3 Associação + Leiden", "V2 Gower + GraphSAGE", "V4 Associação + GraphSAGE"]
 JAN = {"1_matricula": "Matrícula", "3_fim_1sem": "Fim do 1º sem.", "4_fim_2sem": "Fim do 2º sem."}
 
 
 def rotulo(r):
-    if r["variação"] != "ref":
-        return f"V{r['variação']} {r['distância']} + {r['método']}"
-    return "Variável isolada" if r["método"].startswith("Variável isolada") else r["método"]
+    return f"V{r['variação']} {r['distância']} + {r['método']}"
 
 
 def carrega():
     d = pd.concat([pd.read_csv(f) for f in glob.glob(f"{PASTA}/*_divisoes.csv")], ignore_index=True)
     d["abordagem"] = d.apply(rotulo, axis=1)
-    return d[d.abordagem.isin(ORDEM)].copy()
+    return d
 
 
 def testes(d):

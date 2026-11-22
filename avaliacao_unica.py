@@ -1,6 +1,6 @@
 """Avaliação única das 4 variações (protocolo 80/20).
 
-Todas as variações e referências são avaliadas nas MESMAS divisões treino/teste:
+Todas as variações são avaliadas nas MESMAS divisões treino/teste:
 validação cruzada estratificada de 5 dobras (cada dobra = 80% treino, 20% teste),
 repetida R vezes com sorteios diferentes. Métricas iguais para todos: F1 macro, AUC e
 revocação da evasão. O desfecho nunca entra na construção do grafo nem do Leiden; os
@@ -8,7 +8,6 @@ rótulos dos 20% de teste nunca entram no treino.
 
     variação 1: Gower      + Leiden      variação 2: Gower      + GraphSAGE
     variação 3: Associação + Leiden      variação 4: Associação + GraphSAGE
-    referências (sem grafo): melhor variável isolada, regressão logística, MLP
 
 Uso:
     python avaliacao_unica.py --janela 1_matricula --k 40 --repeticoes 10
@@ -54,12 +53,11 @@ def main():
     ap.add_argument("--janela", default="1_matricula", choices=list(ge.JANELAS))
     ap.add_argument("--k", type=int, default=40)
     ap.add_argument("--repeticoes", type=int, default=10)
-    ap.add_argument("--sem-gnn", action="store_true", help="pula GraphSAGE/MLP (teste rápido)")
+    ap.add_argument("--sem-gnn", action="store_true", help="pula GraphSAGE (teste rápido)")
     ap.add_argument("--saida", default="resultados/avaliacao_unica")
     a = ap.parse_args()
 
     import torch
-    from sklearn.linear_model import LogisticRegression
     from sklearn.model_selection import RepeatedStratifiedKFold, train_test_split
     torch.use_deterministic_algorithms(True)
     torch.set_num_threads(1)
@@ -103,20 +101,6 @@ def main():
             t_metodo[f"V{var} Leiden"] = t_metodo.get(f"V{var} Leiden", 0) + time.perf_counter() - t0
             registra("Leiden", var, dist, s, metricas(y[te], p[te], pi))
 
-        # referência: melhor variável isolada (escolhida só no treino), mesmo previsor por grupo
-        t0 = time.perf_counter()
-        var_nome, grupo = ge.melhor_variavel(df, cats, nums, y, tr_all)
-        p, pi = ge.taxa_por_grupo(grupo, y, tr_all)
-        t_metodo["ref. variável isolada"] = t_metodo.get("ref. variável isolada", 0) + time.perf_counter() - t0
-        registra(f"Variável isolada ({var_nome})", "ref", "-", s, metricas(y[te], p[te], pi))
-
-        # referência: regressão logística (sem grafo), pesos de classe
-        t0 = time.perf_counter()
-        lr = LogisticRegression(max_iter=3000, class_weight="balanced").fit(X.numpy()[tr_all], y[tr_all])
-        p = lr.predict_proba(X.numpy())[:, 1]
-        t_metodo["ref. logística"] = t_metodo.get("ref. logística", 0) + time.perf_counter() - t0
-        registra("Logística", "ref", "-", s, metricas(y[te], p[te], 0.5))
-
         if a.sem_gnn:
             continue
         # variações 2 e 4: GraphSAGE no grafo de cada distância
@@ -126,12 +110,6 @@ def main():
             p = ge.treina(ge.graphsage(X.shape[1]), X, grafos[dist]["ei"], y, tr, va)
             t_metodo[f"V{var} GraphSAGE"] = t_metodo.get(f"V{var} GraphSAGE", 0) + time.perf_counter() - t0
             registra("GraphSAGE", var, dist, s, metricas(y[te], p[te], 0.5))
-        # referência: MLP de mesma arquitetura, sem arestas
-        torch.manual_seed(s)
-        t0 = time.perf_counter()
-        p = ge.treina(ge.mlp_sem_arestas(X.shape[1]), X, grafos["Gower"]["ei"], y, tr, va)
-        t_metodo["ref. MLP"] = t_metodo.get("ref. MLP", 0) + time.perf_counter() - t0
-        registra("MLP (sem arestas)", "ref", "-", s, metricas(y[te], p[te], 0.5))
         if s % 5 == 4:
             print(f"  repetição {s // 5 + 1}/{a.repeticoes} ok", flush=True)
 
@@ -141,7 +119,6 @@ def main():
     tempos += [{"etapa": f"{m} (média por divisão)", "s": v / len(divisoes)} for m, v in t_metodo.items()]
     pd.DataFrame(tempos).assign(janela=a.janela, k=a.k).to_csv(f"{base}_tempos.csv", index=False)
     r = pd.DataFrame(res)
-    r["método"] = r["método"].str.replace(r"Variável isolada \(.*\)", "Variável isolada", regex=True)
     print(r.groupby(["variação", "método", "distância"])[["F1", "AUC", "revocação evasão"]].agg(["mean", "std"]).round(3).to_string())
 
 

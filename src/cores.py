@@ -1,7 +1,7 @@
 """Paleta única das figuras do artigo: cada conceito tem sempre a mesma cor.
 
     desfecho     evadiu = vermelho, formou = verde (também nos mapas de risco: verde -> vermelho)
-    método       Leiden = roxo, GraphSAGE = âmbar; referências sem grafo = tons de cinza
+    método       Leiden = roxo, GraphSAGE = âmbar
     distância    Gower = linha cheia / marcador cheio; Associação = linha tracejada / marcador vazado
     janela       sempre no eixo ou no painel, na ordem matrícula -> 1º semestre -> 2º semestre
     comunidade   cores categóricas que evitam as cores reservadas acima (vermelho, verde, roxo, âmbar)
@@ -11,12 +11,8 @@ FORMOU = "#27AE60"
 
 LEIDEN = "#534AB7"
 GRAPHSAGE = "#E08A00"
-VAR_ISOLADA = "#A8A6A0"
-LOGISTICA = "#4A4945"
-MLP = "#7D7B75"
 
-COR_METODO = {"Leiden": LEIDEN, "GraphSAGE": GRAPHSAGE, "Variável isolada": VAR_ISOLADA,
-              "Logística": LOGISTICA, "MLP (sem arestas)": MLP}
+COR_METODO = {"Leiden": LEIDEN, "GraphSAGE": GRAPHSAGE}
 LINHA_DIST = {"Gower": "-", "Associação": "--"}
 
 JANELAS = ["1_matricula", "3_fim_1sem", "4_fim_2sem"]

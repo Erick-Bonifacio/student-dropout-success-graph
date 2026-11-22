@@ -125,21 +125,6 @@ def taxa_por_grupo(grupo, y, treino, a: float = 5.0):
     return pd.Series(grupo).map(taxa).fillna(pi).to_numpy(), pi
 
 
-def melhor_variavel(df, cats, nums, y, treino):
-    """Escolhe, só no treino, a variável isolada com maior V de Cramér (numéricas em quintis do treino)."""
-    melhor, grupo_melhor, v_melhor = None, None, -1.0
-    for c in cats + nums:
-        if c in cats:
-            g = df[c].to_numpy()
-        else:
-            cortes = np.unique(np.quantile(df[c].to_numpy()[treino], [0.2, 0.4, 0.6, 0.8]))
-            g = np.digitize(df[c].to_numpy(), cortes)
-        v = cramer_v(g[treino], y[treino])
-        if v > v_melhor:
-            melhor, grupo_melhor, v_melhor = c, g, v
-    return melhor, grupo_melhor
-
-
 # ----------------------------------------------------------------------------- redes neurais
 def atributos(df, cats, nums):
     import torch
@@ -182,17 +167,3 @@ def graphsage(d):
     from torch_geometric.nn.models import GraphSAGE
     return GraphSAGE(d, 64, num_layers=2, out_channels=2, dropout=0.5)
 
-
-def mlp_sem_arestas(d):
-    import torch
-    from torch_geometric.nn.models import MLP
-
-    class SemArestas(torch.nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.m = MLP(in_channels=d, hidden_channels=64, out_channels=2, num_layers=2, dropout=0.5, norm=None)
-
-        def forward(self, x, ei):
-            return self.m(x)
-
-    return SemArestas()

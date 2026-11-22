@@ -7,8 +7,5 @@ kNN mútuo,1.038474300003145,3_fim_1sem,60
 Leiden,0.1485011000186205,3_fim_1sem,60
 V1 Leiden (média por divisão),0.001857490005204454,3_fim_1sem,60
 V3 Leiden (média por divisão),0.0018213700037449597,3_fim_1sem,60
-ref. variável isolada (média por divisão),0.13247531001106835,3_fim_1sem,60
-ref. logística (média por divisão),0.029857970000011846,3_fim_1sem,60
 V2 GraphSAGE (média por divisão),12.527516269986517,3_fim_1sem,60
 V4 GraphSAGE (média por divisão),15.114778820000357,3_fim_1sem,60
-ref. MLP (média por divisão),0.8579590299865231,3_fim_1sem,60
