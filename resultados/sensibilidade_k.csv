@@ -1,0 +1,13 @@
+janela,distância,k,V de Cramér,p,comunidades ≥30,maior evasão numa comunidade,NMI com k=40
+1_matricula,Gower,20,0.322,0.005,14,0.678,0.642
+1_matricula,Gower,40,0.316,0.001,12,0.697,1.0
+1_matricula,Gower,60,0.316,0.005,10,0.686,0.777
+1_matricula,Associação,20,0.363,0.005,19,0.807,0.847
+1_matricula,Associação,40,0.332,0.001,16,0.669,1.0
+1_matricula,Associação,60,0.343,0.005,15,0.671,0.925
+3_fim_1sem,Gower,20,0.495,0.005,15,0.912,0.593
+3_fim_1sem,Gower,40,0.463,0.001,11,0.828,1.0
+3_fim_1sem,Gower,60,0.469,0.005,10,0.927,0.653
+3_fim_1sem,Associação,20,0.589,0.005,21,0.995,0.832
+3_fim_1sem,Associação,40,0.576,0.001,18,0.959,1.0
+3_fim_1sem,Associação,60,0.551,0.005,15,0.862,0.826

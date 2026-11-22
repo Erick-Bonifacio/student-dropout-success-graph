@@ -1,0 +1,5 @@
+janela,distância,arestas mesmo desfecho,esperado ao acaso,assortatividade,evadiu: vizinhos que evadiram,formou: vizinhos que se formaram,evadiu cercado de formados (≥70%),formou cercado de evadidos (≥70%),grau médio evadiu,grau médio formou
+1_matricula,Gower,0.611,0.524,0.161,0.489,0.672,336,123,20.567,22.967
+1_matricula,Associação,0.61,0.524,0.166,0.486,0.673,340,132,21.871,23.724
+3_fim_1sem,Gower,0.733,0.524,0.408,0.642,0.774,239,66,18.1,22.144
+3_fim_1sem,Associação,0.781,0.524,0.519,0.708,0.811,199,48,18.138,21.437

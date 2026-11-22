@@ -25,6 +25,7 @@ Usamos só **Dropout × Graduate** (3.630 alunos, 39% de evasão). *Enrolled* fi
 pip install -r requirements.txt jupyter
 jupyter notebook quatro_variacoes.ipynb   # fase 1
 jupyter notebook previsao_enrolled.ipynb  # fase 2
+jupyter notebook estrutura_relacional.ipynb  # fase 3
 ```
 
 `data.csv` precisa estar na mesma pasta do notebook. Roda inteiro em poucos minutos num CPU, sem cache. Os números vão para `resultados/` e as figuras para `figuras/`.
@@ -58,6 +59,9 @@ Em `figuras/`, cada uma em PDF (para o LaTeX, largura 6,3 pol., fonte 9 pt) e PN
 - `08_enrolled_calibracao_{janela}`: calibração nos alunos conhecidos (evasão observada × prevista), (a) Leiden e (b) GNN.
 - `09_enrolled_distribuicao_{janela}`: distribuição do risco previsto para os 794 *Enrolled*, (a) Leiden e (b) GNN.
 - `10_enrolled_grafo_{janela}_{distancia}`: os *Enrolled* no grafo dos 4.424 alunos, coloridos pelo risco previsto pela GNN.
+- `11_gemeos_destinos_diferentes`: pares vizinhos na matrícula com desfechos opostos, comparados no que veio depois, (a) Gower e (b) Associação.
+- `12_comunidade_vs_variaveis_isoladas`: V de Cramér da comunidade contra as 10 melhores variáveis sozinhas, (a) matrícula e (b) fim do 1º semestre.
+- `13_combinacao_de_fatores`: evasão por combinação de idade ≥ 25 e pais com escolaridade desconhecida.
 
 ## Principais achados
 
@@ -72,3 +76,9 @@ Em `figuras/`, cada uma em PDF (para o LaTeX, largura 6,3 pol., fonte 9 pt) e PN
 Em `previsao_enrolled.ipynb`, os 794 *Enrolled* entram no grafo como vértices sem rótulo e recebem uma probabilidade de evadir: no Leiden, a taxa de evasão da sua comunidade; na GNN (e no MLP de referência), o modelo treinado nos 3.630 alunos com desfecho. Somando as probabilidades, são esperadas 295/299 evasões pelo Leiden, 286/280 pela GNN e 292/299 pelo MLP na matrícula (Gower/Associação), e 285/285, 328/324 e 327/335 no fim do 1º semestre, ou seja, cerca de 35% a 42% dos *Enrolled*. A confiança é a calibração medida nos alunos conhecidos (ECE ≤ 0,03 em todos os métodos); vale se o padrão se mantiver.
 
 Números em `resultados/enrolled_resumo.csv` e `resultados/enrolled_calibracao.csv`. O Leiden é exato; a GNN e o MLP variam cerca de 0,01 entre execuções.
+
+## Fase 3: o que a estrutura relacional revela
+
+Em `estrutura_relacional.ipynb` (determinístico, sem GNN): no grafo da matrícula há 15.560 (Gower) e 16.268 (Associação) pares de "gêmeos", alunos vizinhos com desfechos opostos (39% das arestas); eles quase não diferem na matrícula, mas o que evadiu aprova em média 2,7 disciplinas no 1º semestre contra 6,2 do que se formou, e 29% têm mensalidade atrasada contra 1%. Os desfechos se agrupam no grafo sem que ele os tenha visto: 0,61/0,61 das arestas ligam alunos com o mesmo desfecho na matrícula e 0,73/0,78 no fim do 1º semestre (Gower/Associação), contra 0,52 ao acaso. Na separação do desfecho, a comunidade **não** supera a melhor variável sozinha (idade, V = 0,33, contra 0,32/0,33 na matrícula; aprovações no 1º semestre, 0,65, contra 0,46/0,58), e o ganho do grafo é outro: encontrar grupos concretos sem indicar quais variáveis olhar, como a comunidade de maior risco da matrícula (142 alunos, 70% de evasão, 83% com pais de escolaridade desconhecida), um fator que fica no meio do ranking de variáveis isoladas. Com k = 20 e k = 60 o V fica entre 0,32 e 0,36 na matrícula e entre 0,46 e 0,59 no fim do 1º semestre, sempre com p < 0,01, então a conclusão não depende do k = 40.
+
+Números em `resultados/{homofilia,gemeos,variaveis_isoladas,combinacao_fatores,sensibilidade_k,perfis_sucesso}.csv`.

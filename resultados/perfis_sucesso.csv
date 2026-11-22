@@ -1,0 +1,13 @@
+comunidade,alunos,evasão,numéricas,categorias marcantes,janela,distancia
+C6,325,19%,idade -0.5 dp; ordem de candidatura +0.4 dp; nota qualif. anterior -0.1 dp,"deslocado (100%, ×1.8); mulher (100%, ×1.5); 1ª fase geral (81%, ×2.1)",1_matricula,Gower
+C3,421,23%,ordem de candidatura +0.7 dp; idade -0.6 dp; nota de admissão -0.2 dp,"deslocado (100%, ×1.8); mulher (100%, ×1.5); 2ª fase geral (59%, ×3.0)",1_matricula,Gower
+C5,347,26%,idade -0.5 dp; ordem de candidatura +0.3 dp; nota qualif. anterior +0.1 dp,"deslocado (100%, ×1.8); mãe: trabalho não qualificado (95%, ×2.6); 1ª fase geral (68%, ×1.8)",1_matricula,Gower
+C1,406,19%,ordem de candidatura +1.9 dp; idade -0.6 dp; nota de admissão -0.1 dp,"deslocado (100%, ×1.8); mulher (100%, ×1.5); 1ª fase geral (61%, ×1.6)",1_matricula,Associação
+C3,369,20%,idade -0.6 dp; ordem de candidatura -0.2 dp; nota qualif. anterior +0.2 dp,"não deslocado (100%, ×2.2); mulher (100%, ×1.5); 1ª fase geral (60%, ×1.5)",1_matricula,Associação
+C0,572,23%,idade -0.5 dp; ordem de candidatura -0.3 dp; nota de admissão -0.1 dp,"deslocado (100%, ×1.8); mulher (100%, ×1.5); 1ª fase geral (61%, ×1.6)",1_matricula,Associação
+C2,447,13%,idade -0.5 dp; ordem de candidatura +0.5 dp; 1º sem: nota +0.5 dp,"deslocado (100%, ×1.8); mulher (88%, ×1.3); bolsista (58%, ×2.2)",3_fim_1sem,Gower
+C7,229,14%,idade -0.5 dp; 1º sem: nota +0.5 dp; ordem de candidatura +0.4 dp,"deslocado (99%, ×1.8); 1ª fase geral (92%, ×2.4); mulher (90%, ×1.4)",3_fim_1sem,Gower
+C3,404,20%,ordem de candidatura +0.6 dp; idade -0.6 dp; 1º sem: nota +0.4 dp,"deslocado (100%, ×1.8); mulher (87%, ×1.3); 1ª fase geral (52%, ×1.3)",3_fim_1sem,Gower
+C10,138,4%,idade -0.6 dp; ordem de candidatura -0.5 dp; 1º sem: nota +0.5 dp,"não deslocado (100%, ×2.2); mulher (100%, ×1.5); bolsista (100%, ×3.7)",3_fim_1sem,Associação
+C3,321,8%,idade -0.6 dp; 1º sem: nota +0.5 dp; 1º sem: aprovadas +0.4 dp,"mulher (100%, ×1.5); bolsista (100%, ×3.7); deslocado (99%, ×1.8)",3_fim_1sem,Associação
+C8,155,8%,idade -0.6 dp; 1º sem: nota +0.5 dp; ordem de candidatura -0.4 dp,"mulher (100%, ×1.5); não deslocado (99%, ×2.2); não bolsista (99%, ×1.4)",3_fim_1sem,Associação
