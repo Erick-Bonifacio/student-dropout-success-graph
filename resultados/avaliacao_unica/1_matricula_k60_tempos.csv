@@ -1,0 +1,14 @@
+etapa,s,janela,k
+distância Gower,15.20516030001454,1_matricula,60
+kNN mútuo,1.1030034000286832,1_matricula,60
+Leiden,0.920461300003808,1_matricula,60
+distância Associação,3.2083390000043437,1_matricula,60
+kNN mútuo,1.0061393999494612,1_matricula,60
+Leiden,0.1270902000251226,1_matricula,60
+V1 Leiden (média por divisão),0.0019201399991288781,1_matricula,60
+V3 Leiden (média por divisão),0.001812300004530698,1_matricula,60
+ref. variável isolada (média por divisão),0.09730258001363837,1_matricula,60
+ref. logística (média por divisão),0.029440419998718426,1_matricula,60
+V2 GraphSAGE (média por divisão),11.939420770015568,1_matricula,60
+V4 GraphSAGE (média por divisão),9.776075969991506,1_matricula,60
+ref. MLP (média por divisão),0.7056051599909552,1_matricula,60

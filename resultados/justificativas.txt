@@ -1,0 +1,38 @@
+== 1. Dataset
+linhas: 4424 | colunas: 37 (36 atributos + alvo)
+valores ausentes: 0 | linhas duplicadas: 0
+classes: {'Graduate': 2209, 'Dropout': 1421, 'Enrolled': 794}
+Dropout x Graduate: 3630 alunos, evasão 0.391
+
+== 2. Indicadores macroeconômicos (valores distintos no dataset)
+unemployment: 10 valores distintos
+inflation: 9 valores distintos
+gdp: 10 valores distintos
+combinações distintas dos três: 10 -> descrevem a coorte/ano de ingresso, não o aluno
+
+== 3. Curso
+cursos distintos: 17 | V de Cramér curso x desfecho: 0.349
+Gower matrícula SEM curso: NMI(comunidade, curso) = 0.112 | NMI(comunidade, desfecho) = 0.034 | V comunidade x desfecho = 0.317
+Gower matrícula COM curso: NMI(comunidade, curso) = 0.187 | NMI(comunidade, desfecho) = 0.030 | V comunidade x desfecho = 0.298
+
+== 4. Janela do 2º semestre
+evadidos com 0 disciplinas inscritas no 2º sem: 5.4% | formados: 3.4%
+evadidos com 0 aprovações no 2º sem: 51.2% | formados: 3.4%
+evadidos com 0 aprovações no 1º sem: 40.1% | formados: 3.5%
+logística, janela matrícula: F1 = 0.678, AUC = 0.736
+logística, janela fim do 1º sem: F1 = 0.869, AUC = 0.930
+logística, janela fim do 2º sem: F1 = 0.895, AUC = 0.949
+V de Cramér, aprovações 2º sem (quintis) x desfecho: 0.712
+
+== 5. Categorias raras (< 30 alunos) agrupadas em 'outros'
+marital: 6 categorias -> 4 | alunos em 'outros': 29 (0.8%)
+app_mode: 18 categorias -> 11 | alunos em 'outros': 69 (1.9%)
+prev_qual: 17 categorias -> 7 | alunos em 'outros': 103 (2.8%)
+nationality: 19 categorias -> 3 | alunos em 'outros': 54 (1.5%)
+mother_qual: 29 categorias -> 10 | alunos em 'outros': 80 (2.2%)
+father_qual: 34 categorias -> 10 | alunos em 'outros': 90 (2.5%)
+mother_occ: 29 categorias -> 11 | alunos em 'outros': 98 (2.7%)
+father_occ: 42 categorias -> 13 | alunos em 'outros': 69 (1.9%)
+
+== 6. Referências para k
+sqrt(N) = 60 | ln(N) = 8.2 | k=40 = 1.1% de N

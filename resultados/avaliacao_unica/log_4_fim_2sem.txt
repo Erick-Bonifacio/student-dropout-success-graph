@@ -1,0 +1,21 @@
+4_fim_2sem k=40: 3630 alunos, 50 divisões 80/20
+  repetição 1/10 ok
+  repetição 2/10 ok
+  repetição 3/10 ok
+  repetição 4/10 ok
+  repetição 5/10 ok
+  repetição 6/10 ok
+  repetição 7/10 ok
+  repetição 8/10 ok
+  repetição 9/10 ok
+  repetição 10/10 ok
+                                          F1           AUC        revocação evasão       
+                                        mean    std   mean    std             mean    std
+variação método            distância                                                     
+1        Leiden            Gower       0.762  0.016  0.833  0.014            0.662  0.048
+2        GraphSAGE         Gower       0.894  0.011  0.946  0.009            0.848  0.020
+3        Leiden            Associação  0.760  0.014  0.849  0.013            0.731  0.033
+4        GraphSAGE         Associação  0.893  0.010  0.946  0.009            0.850  0.019
+ref      Logística         -           0.896  0.011  0.949  0.008            0.865  0.021
+         MLP (sem arestas) -           0.896  0.010  0.947  0.008            0.854  0.019
+         Variável isolada  -           0.853  0.012  0.874  0.012            0.822  0.020

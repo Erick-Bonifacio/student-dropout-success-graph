@@ -1,0 +1,27 @@
+\section{Referencial Teórico}
+\label{referencial}
+
+\textbf{Dados e trabalhos relacionados.} O UCI 697 reúne 4.424 alunos com dados conhecidos na matrícula (trajetória escolar, dados demográficos e socioeconômicos), situação financeira, desempenho no 1º e no 2º semestres e o desfecho: evadiu (\textit{Dropout}), ainda matriculado (\textit{Enrolled}) ou formou (\textit{Graduate}) \citep{realinho2022}. Os autores o criaram para identificar cedo os alunos em risco. \cite{villar2024} compararam classificadores supervisionados nesse problema e obtiveram os melhores resultados com métodos de \textit{boosting}. \cite{almeida2025} transformaram registros tabulares de alunos em grafos e compararam GCN e GraphSAGE com modelos tabulares: só uma das construções de grafo superou o melhor modelo tabular, o que mostra que a construção do grafo é decisiva. Como o UCI 697 não registra vínculos entre alunos, qualquer aresta precisa ser derivada dos atributos.
+
+\textbf{Distâncias para dados mistos.} A distância de \cite{gower1971} combina variáveis categóricas e numéricas com o mesmo peso. Para $p$ variáveis,
+\begin{equation}
+d_{ij} = \frac{1}{p}\sum_{k=1}^{p} d_{ij}^{(k)},
+\label{eq-gower}
+\end{equation}
+com $d_{ij}^{(k)} = |x_{ik} - x_{jk}| / R_k$ para numéricas de amplitude $R_k$ e $d_{ij}^{(k)} \in \{0,1\}$ para categóricas. \cite{vandevelden2026} mostram que essa construção favorece certos tipos e escalas de variável e propõem uma formulação em que a distância entre duas categorias depende da associação com as demais variáveis, com cada variável dividida pela sua distância média para contribuir de forma comparável (pacote R \texttt{manydist}, \citealp{manydist}).
+
+\textbf{Grafos de semelhança, homofilia e comunidades.} Um grafo de $k$ vizinhos mais próximos (kNN) liga cada vértice aos $k$ mais próximos; na versão mútua, a aresta $i$--$j$ só existe se a relação vale nos dois sentidos. Homofilia é a tendência de vértices semelhantes estarem ligados \citep{mcpherson2001}, medida pela assortatividade \citep{newman2003}. Uma comunidade é um conjunto de vértices mais ligados entre si do que com o resto do grafo, e a modularidade avalia uma partição \citep{newman2004}:
+\begin{equation}
+Q = \frac{1}{2m}\sum_{i,j}\left(A_{ij} - \frac{k_i k_j}{2m}\right)\delta(c_i, c_j),
+\label{eq-modularidade}
+\end{equation}
+em que $A_{ij}$ é o peso da aresta, $k_i$ a força do vértice, $m$ a soma dos pesos e $\delta(c_i, c_j) = 1$ se $i$ e $j$ estão na mesma comunidade. O algoritmo de Louvain \citep{blondel2008} otimiza $Q$, mas pode gerar comunidades desconexas; o de Leiden corrige esse defeito e é mais rápido \citep{traag2019}.
+
+\textbf{Redes neurais em grafos.} Uma GNN aprende a representação de cada vértice a partir dos seus atributos e dos atributos dos vizinhos. A GCN \citep{kipf2017} depende da matriz de adjacência do grafo de treino; a GraphSAGE \citep{hamilton2017} aprende uma função de agregação e, por isso, é indutiva (classifica vértices novos sem retreino). Com agregação por média, uma camada calcula
+\begin{equation}
+\mathbf{h}_i' = \sigma\Big(\mathbf{W}_1\mathbf{h}_i + \mathbf{W}_2 \frac{1}{|\mathcal{N}(i)|}\sum_{j \in \mathcal{N}(i)} \mathbf{h}_j\Big).
+\label{eq-sage}
+\end{equation}
+\cite{shchur2018} mostram que comparar modelos em grafos com uma única divisão treino/teste pode levar a conclusões enganosas e recomendam avaliar todos os modelos nas mesmas divisões, repetidas.
+
+\textbf{Metodologia CRISP-NET.} A CRISP-NET \citep{acunacid2025} integra às fases do CRISP-DM (entendimento do problema e dos dados, preparação, modelagem, avaliação e entrega) atividades de análise de redes, como a definição explícita de vértices e arestas, a caracterização estrutural do grafo e um desenho de teste comparativo entre as variações.

@@ -1,0 +1,918 @@
+<meta charset="utf-8">
+<title>Evasão em Grafos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Palco 1920x1080 do template Slides Vivos; paleta institucional (azul-aço e marinho) +
+   as cores semânticas do artigo: Leiden roxo, GraphSAGE âmbar, evadiu vermelho, formou verde */
+:root{
+  --paper:#F5F6F7; --paper2:#E8EBEE; --ink:#14202E; --ink2:#3E4A59; --ink3:#566070; --line:#D5DAE0;
+  --teal:#2F5F8A; --teal-d:#244B6E; --teal-s:#DDE7F0;
+  --violet:#534AB7; --violet-d:#4237A0; --violet-s:#E6E4F6;
+  --coral:#C0392B; --coral-s:#F5DEDA;
+  --sun:#B07D1E; --sun-s:#F3EBDA;
+  --sage:#E08A00; --sage-d:#A86500; --sage-s:#FBEBD0;
+  --green:#239B55; --green-s:#D8F0E1;
+  --navy:#1A2B44; --code:#18212E;
+  --neutral:#76808C;
+  --disp:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --by:var(--teal);
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:#DFE3E7;color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+#viewport{position:fixed;inset:0;display:grid;place-items:center;overflow:hidden}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:0 0;background:var(--paper);box-shadow:0 30px 80px -30px rgba(20,38,61,.35);overflow:hidden}
+
+.slide{position:absolute;inset:0;padding:150px 120px 110px;opacity:0;visibility:hidden;background:var(--paper);overflow:hidden}
+.slide.is-active{opacity:1;visibility:visible;z-index:2;animation:sIn .75s var(--ease) both}
+.slide.is-leaving{visibility:visible;z-index:1;animation:sOut .6s var(--ease) forwards}
+#stage.back .slide.is-active{animation-name:sInB}
+#stage.back .slide.is-leaving{animation-name:sOutB}
+@keyframes sIn{from{opacity:0;transform:translateX(70px)}to{opacity:1;transform:none}}
+@keyframes sOut{from{opacity:1}to{opacity:0;transform:translateX(-70px) scale(.985)}}
+@keyframes sInB{from{opacity:0;transform:translateX(-70px)}to{opacity:1;transform:none}}
+@keyframes sOutB{from{opacity:1}to{opacity:0;transform:translateX(70px) scale(.985)}}
+.slide.divider.is-active,.slide.cover.is-active{animation:iris 1.05s cubic-bezier(.7,0,.2,1) both}
+@keyframes iris{from{clip-path:circle(0% at var(--ox,88%) var(--oy,18%))}to{clip-path:circle(150% at var(--ox,88%) var(--oy,18%))}}
+
+.is-active [data-a]{animation:rise .9s var(--ease) both;animation-delay:calc(var(--i,0) * 95ms + 220ms)}
+.is-active [data-a="left"]{animation-name:fromL}
+.is-active [data-a="right"]{animation-name:fromR}
+.is-active [data-a="scale"]{animation-name:scaleIn}
+.is-active [data-a="wipe"]{animation-name:wipe;animation-duration:1.1s}
+.is-active [data-a="pop"]{animation-name:pop;animation-duration:.7s}
+.is-active [data-a="draw"]{animation-name:draw;animation-duration:1.2s}
+@keyframes rise{from{opacity:0;transform:translateY(42px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes fromL{from{opacity:0;transform:translateX(-70px)}to{opacity:1;transform:none}}
+@keyframes fromR{from{opacity:0;transform:translateX(70px)}to{opacity:1;transform:none}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes pop{0%{opacity:0;transform:scale(.4)}70%{transform:scale(1.08)}100%{opacity:1;transform:none}}
+@keyframes draw{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+[data-a="draw"]{transform-origin:left center}
+
+.frag{opacity:0;transform:translateY(26px);transition:opacity .55s var(--ease),transform .55s var(--ease),filter .55s;filter:blur(4px)}
+.frag.on{opacity:1;transform:none;filter:none}
+
+.hd{position:absolute;top:56px;left:120px;right:120px;display:flex;align-items:center;justify-content:space-between;font:600 19px/1 var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)}
+.hd .part{display:flex;align-items:center;gap:16px;color:var(--ink2)}
+.hd .part i{width:16px;height:16px;border-radius:3px;background:var(--by);display:block}
+.hd .run{display:flex;align-items:center;gap:18px}
+.hd .run b{display:block;width:120px;height:2px;background:currentColor;position:relative}
+.hd .run b::after{content:"";position:absolute;right:-5px;top:-5px;width:12px;height:12px;border-radius:50%;background:var(--by)}
+.hd .num{font-family:var(--mono);letter-spacing:.05em;color:var(--ink)}
+.ft{position:absolute;left:120px;right:120px;bottom:44px;display:flex;justify-content:space-between;font:500 20px/1.3 var(--body);color:var(--ink3)}
+.ft .who{display:flex;align-items:center;gap:10px}
+.ft .who::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--by)}
+
+.eyebrow{font:600 21px/1 var(--body);letter-spacing:.22em;text-transform:uppercase;color:var(--by);margin:0 0 22px}
+h1,h2,h3{font-family:var(--disp);margin:0;text-wrap:balance}
+h2.t{font-size:68px;line-height:1.06;font-weight:700;letter-spacing:-.02em;max-width:1560px}
+h2.t .lt{font-weight:300;display:block;font-size:.6em;letter-spacing:-.005em;color:var(--ink2);margin-bottom:8px}
+h3{font-size:36px;font-weight:600;line-height:1.15;letter-spacing:-.01em}
+p{margin:0}
+.lead{font-size:33px;line-height:1.42;color:var(--ink2);max-width:1200px}
+.body{font-size:28px;line-height:1.45;color:var(--ink2)}
+.small{font-size:24px;line-height:1.4;color:var(--ink3)}
+strong{color:var(--ink);font-weight:600}
+.hl-t{color:var(--teal-d)} .hl-v{color:var(--violet-d)} .hl-c{color:var(--coral)} .hl-s{color:var(--sage-d)} .hl-g{color:#1E8A4C}
+.mark{background:linear-gradient(transparent 60%,var(--sun-s) 60%);padding:0 .1em}
+
+.row{display:flex;gap:48px}
+.col{display:flex;flex-direction:column;gap:28px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:36px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:24px}
+.mt-s{margin-top:28px}.mt{margin-top:52px}.mt-l{margin-top:76px}
+
+.card{background:#fff;border-radius:14px;padding:36px 38px;border:1.5px solid var(--line)}
+.card.t{background:var(--teal-s);border-color:transparent}
+.card.v{background:var(--violet-s);border-color:transparent}
+.card.c{background:var(--coral-s);border-color:transparent}
+.card.s{background:var(--sun-s);border-color:transparent}
+.card.a{background:var(--sage-s);border-color:transparent}
+.card.g{background:var(--green-s);border-color:transparent}
+.card.dk{background:var(--navy);color:#fff;border-color:transparent}
+.card.dk .body,.card.dk p{color:#D3DBE6}
+.card.dk strong,.card.dk h3{color:#fff}
+.card h3{margin-bottom:14px}
+.tag{display:inline-flex;align-items:center;gap:10px;font:600 19px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;padding:10px 16px;border-radius:6px;background:var(--paper2);color:var(--ink2)}
+.tag.t{background:var(--teal);color:#fff}.tag.v{background:var(--violet);color:#fff}.tag.c{background:var(--coral);color:#fff}.tag.a{background:var(--sage-d);color:#fff}.tag.g{background:var(--green);color:#fff}
+.callout{display:flex;gap:22px;align-items:flex-start;border-left:6px solid var(--sun);background:var(--sun-s);padding:24px 30px;border-radius:0 12px 12px 0;font-size:27px;line-height:1.42;color:var(--ink)}
+.callout.c{border-color:var(--coral);background:var(--coral-s)}
+.callout.t{border-color:var(--teal);background:var(--teal-s)}
+.callout b.k{font:700 19px/1.5 var(--body);letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;padding-top:4px}
+.sym{display:inline-grid;place-items:center;width:58px;height:58px;border-radius:12px;font:700 32px/1 var(--disp);flex:none;color:#fff}
+.sym.ok{background:var(--green)}.sym.x{background:var(--coral)}.sym.q{background:var(--sun)}.sym.b{background:var(--teal)}
+.num-dot{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--ink);color:#fff;font:600 24px/1 var(--mono);flex:none}
+
+.stat .n{font:700 112px/0.95 var(--disp);letter-spacing:-.035em;color:var(--by);font-variant-numeric:tabular-nums}
+.stat .n small{font-size:.45em;font-weight:500;letter-spacing:0;margin-left:6px}
+.stat .l{font-size:25px;line-height:1.35;color:var(--ink2);margin-top:14px;max-width:420px}
+
+.bars{display:flex;flex-direction:column;gap:30px}
+.bar .lab{display:flex;justify-content:space-between;align-items:baseline;font-size:27px;margin-bottom:10px;color:var(--ink)}
+.bar .lab b{font:700 36px/1 var(--disp);color:var(--by);font-variant-numeric:tabular-nums}
+.bar .trk{height:22px;border-radius:6px;background:var(--paper2);overflow:hidden}
+.bar .fl{height:100%;width:0;border-radius:6px;background:var(--by);transition:width 1.3s var(--ease);transition-delay:calc(var(--i,0)*120ms + 350ms)}
+.is-active .bar .fl{width:calc(var(--v)*1%)}
+.stk{display:flex;height:60px;border-radius:8px;overflow:hidden;gap:4px}
+.stk span{display:flex;align-items:center;justify-content:center;color:#fff;font:600 25px/1 var(--body);width:0;transition:width 1.2s var(--ease);transition-delay:calc(var(--i,0)*150ms + 400ms);white-space:nowrap;overflow:hidden}
+.is-active .stk span{width:calc(var(--v)*1%)}
+.stk .ev{background:var(--coral)}.stk .fo{background:var(--green)}
+.legend{display:flex;gap:28px;font-size:22px;color:var(--ink2);flex-wrap:wrap}
+.legend i{display:inline-block;width:18px;height:18px;border-radius:4px;margin-right:10px;vertical-align:-2px}
+
+.shot{border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 26px 50px -30px rgba(20,38,61,.45),0 0 0 1.5px var(--line)}
+.shot .bar3{height:36px;background:var(--navy);display:flex;align-items:center;gap:9px;padding:0 16px}
+.shot .bar3 i{width:11px;height:11px;border-radius:50%;background:#55667E}
+.shot .bar3 span{margin-left:12px;font:500 17px/1 var(--mono);color:#B8C4D4}
+.shot img{display:block;width:100%}
+.cap{font-size:20px;color:var(--ink3);margin-top:14px;letter-spacing:.02em}
+.cap b{color:var(--ink2)}
+
+.code{background:var(--code);color:#E4E8EF;border-radius:14px;padding:28px 0;font:500 24px/1.6 var(--mono);box-shadow:0 30px 60px -30px rgba(10,15,25,.6)}
+.code .ln{display:flex;padding:0 30px;transition:background .4s;white-space:pre}
+.code .ln::before{content:attr(data-n);width:44px;flex:none;color:#5E6878;text-align:right;margin-right:24px}
+.code .ln.good{background:rgba(47,95,138,.45);box-shadow:inset 6px 0 0 #7FB0DB}
+.code .k{color:#A9B9FF}.code .s{color:#E8C27A}.code .c{color:#8C96A6}.code .nu{color:#F2A07B}.code .f{color:#7CC7FF}
+
+.slide.divider{background:var(--navy);color:#fff;padding:0}
+.divider .dv{position:absolute;inset:0;padding:120px;display:flex;flex-direction:column;justify-content:flex-end}
+.divider .pn{font:700 400px/.8 var(--disp);letter-spacing:-.05em;position:absolute;right:100px;top:80px;color:transparent;-webkit-text-stroke:2.5px rgba(255,255,255,.2)}
+.divider h2{font-size:124px;line-height:.98;font-weight:700;letter-spacing:-.03em}
+.divider h2 .lt{display:block;font-weight:300;font-size:.38em;letter-spacing:.02em;color:#AFC0D6;margin-bottom:22px}
+.divider .dsc{font-size:31px;line-height:1.45;color:#C9D3E0;max-width:1050px;margin-top:34px}
+.divider .pres{display:inline-flex;align-items:center;gap:18px;margin-top:48px;font:500 26px/1 var(--body);color:#fff;padding:14px 26px 14px 14px;border-radius:999px;background:rgba(255,255,255,.08)}
+.divider .pres i{width:48px;height:48px;border-radius:50%;background:var(--by);display:grid;place-items:center;font:700 20px/1 var(--disp);font-style:normal;color:#fff}
+canvas.net{position:absolute;pointer-events:none}
+
+/* componentes deste deck */
+.timeline{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+.timeline .st .k{font:600 20px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-top:26px}
+.timeline .st h3{margin-top:10px}
+.timeline .st .v{font:700 64px/1 var(--disp);color:var(--ink);margin-top:16px;font-variant-numeric:tabular-nums}
+.timeline .st .v small{font:400 24px/1 var(--body);color:var(--ink3);margin-left:8px}
+.mx{display:grid;grid-template-columns:330px 1fr 1fr;gap:18px}
+.mx .h{font:600 30px/1.2 var(--disp);padding:24px 28px;border-radius:12px;color:#fff}
+.mx .h small{display:block;font:400 22px/1.3 var(--body);margin-top:6px}
+.mx .rl{font:600 32px/1.2 var(--disp);display:flex;flex-direction:column;justify-content:center;padding:0 10px}
+.mx .rl small{font:400 22px/1.35 var(--body);color:var(--ink3);margin-top:6px}
+.mx .cell{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:30px;display:flex;align-items:center;gap:22px;font-size:27px;color:var(--ink2)}
+.mx .cell b{font:700 54px/1 var(--disp);color:var(--ink)}
+.formal{display:grid;grid-template-columns:220px 1fr;gap:20px 30px;font-size:28px;line-height:1.4;color:var(--ink2)}
+.formal dt{font:600 21px/1.6 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--by)}
+.formal dd{margin:0}
+.math{font-family:var(--mono);font-size:.92em;color:var(--ink)}
+.hyp{display:grid;grid-template-columns:70px 120px 1fr 1.05fr;gap:26px;align-items:center;padding:26px 0;border-bottom:1.5px solid var(--line)}
+.hyp:first-child{border-top:1.5px solid var(--line)}
+.hyp .id{font:700 40px/1 var(--disp);color:var(--ink)}
+.hyp p{font-size:26px;line-height:1.4;color:var(--ink2)}
+.hyp p strong{display:block;font-size:28px;margin-bottom:4px}
+.person{border-top:5px solid var(--pc);background:#fff;border-radius:0 0 12px 12px;padding:28px 26px;box-shadow:0 0 0 1.5px var(--line)}
+.person .r{font:600 18px/1.2 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--pc)}
+.person h3{font-size:30px;margin-top:12px}
+.person p{font-size:22px;line-height:1.42;color:var(--ink2);margin-top:12px}
+
+/* slides de grafo em tela cheia */
+.slide.fig{padding:118px 120px 84px}
+.figtop{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;height:118px}
+.figtop .eyebrow{margin-bottom:14px}
+.figtop h2{font-size:50px;line-height:1.08;font-weight:700;letter-spacing:-.02em}
+.figtop .side{font-size:22px;color:var(--ink3);text-align:right;line-height:1.4;padding-bottom:6px}
+.gview{position:relative;height:740px;margin-top:18px}
+.gview img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;image-rendering:auto}
+.gstate{position:absolute;left:120px;right:120px;top:118px;height:876px;background:var(--paper)}
+.gstate.frag{transform:none;filter:none;transition:opacity .8s var(--ease)}
+.legend.big{font-size:26px;gap:34px}
+.legend.big i{width:22px;height:22px;border-radius:50%}
+.figimg{display:block;width:100%}
+.pairs{display:flex;flex-direction:column;gap:30px}
+.pairs .pl{font-size:25px;color:var(--ink);margin-bottom:10px;font-weight:600}
+.pairs .pr{display:grid;grid-template-columns:1fr 96px;align-items:center;gap:16px;margin-top:8px}
+.pairs .pb{height:30px;border-radius:6px;background:var(--paper2);overflow:hidden}
+.pairs .pb span{display:block;height:100%;width:0;border-radius:6px;transition:width 1.2s var(--ease);transition-delay:calc(var(--i,0)*120ms + 350ms)}
+.is-active .pairs .pb span{width:calc(var(--v)*1%)}
+.pairs .pb .ev{background:var(--coral)}.pairs .pb .fo{background:var(--green)}
+.pairs .pv{font:700 28px/1 var(--disp);font-variant-numeric:tabular-nums}
+
+/* demonstração */
+.demo{background:#fff;border-radius:16px;padding:26px 28px;box-shadow:0 0 0 1.5px var(--line),0 30px 60px -40px rgba(20,38,61,.45)}
+.demo .ctl{display:flex;gap:26px;align-items:flex-end;flex-wrap:wrap}
+.demo .grp p{font:600 15px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
+.seg{display:inline-flex;background:var(--paper2);border-radius:9px;padding:4px;gap:2px}
+.seg button{all:unset;cursor:pointer;padding:10px 16px;font:600 19px/1 var(--body);border-radius:7px;color:var(--ink2);transition:background .25s,color .25s}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:var(--navy);color:#fff}
+.seg button:focus-visible{outline:2px solid var(--teal)}
+.dview{position:relative;height:456px;margin-top:18px;border-radius:10px;overflow:hidden;background:#fff}
+.dview img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .45s var(--ease)}
+.dview img.on{opacity:1}
+.dview .lg{position:absolute;right:10px;top:8px;background:rgba(255,255,255,.9);padding:6px 10px;border-radius:8px}
+.dmet{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:18px}
+.dmet div{background:var(--paper);border-radius:10px;padding:14px 14px 12px}
+.dmet b{display:block;font:700 34px/1 var(--disp);color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dmet span{display:block;font-size:19px;line-height:1.3;color:var(--ink3);margin-top:6px}
+.dmet .v b{color:var(--violet-d)} .dmet .s b{color:var(--sage-d)}
+
+/* par de slides do mesmo grafo: troca por esmaecimento, sem deslizar */
+.slide.fade.is-active{animation:fadeIn .7s var(--ease) both}
+.slide.fade.is-leaving{animation:fadeOut .6s var(--ease) forwards}
+#stage.back .slide.fade.is-active{animation-name:fadeIn}
+#stage.back .slide.fade.is-leaving{animation-name:fadeOut}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+.slide.fade.still [data-a]{animation:none!important}
+
+#prog{position:fixed;left:0;top:0;height:5px;background:var(--by);width:0;transition:width .6s var(--ease),background .6s;z-index:20}
+#ui{position:fixed;right:18px;bottom:18px;display:flex;align-items:center;gap:6px;background:rgba(21,30,41,.92);color:#fff;border-radius:999px;padding:7px 8px;z-index:20;font:600 14px/1 var(--body);transition:opacity .4s,transform .4s;backdrop-filter:blur(8px)}
+#ui.idle{opacity:0;transform:translateY(16px);pointer-events:none}
+#ui button{all:unset;cursor:pointer;height:36px;min-width:36px;padding:0 12px;border-radius:999px;display:grid;place-items:center;color:#fff}
+#ui button:hover{background:rgba(255,255,255,.14)}
+#ui button:focus-visible{outline:2px solid #7FB0DB}
+#ui .ct{font-family:var(--mono);padding:0 10px;color:#C9D3E0;white-space:nowrap}
+#ui .who{display:flex;align-items:center;gap:8px;padding:0 12px;border-left:1px solid rgba(255,255,255,.18);white-space:nowrap}
+#ui .who i{width:9px;height:9px;border-radius:50%;background:var(--by)}
+#notes{position:fixed;right:18px;bottom:74px;width:min(880px,calc(100% - 32px));max-height:42vh;overflow:auto;background:#fff;color:var(--ink);border-radius:14px;padding:22px 26px;box-shadow:0 20px 60px -20px rgba(0,0,0,.45);z-index:21;font:16px/1.55 var(--body)}
+#notes h4{margin:0 0 8px;font:700 13px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--by)}
+#notes p{margin:0 0 8px}
+#ov{position:fixed;inset:0;z-index:30;background:rgba(20,38,61,.96);overflow:auto;padding:40px 24px}
+#ov .gridov{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;max-width:1300px;margin:0 auto}
+#ov button{all:unset;cursor:pointer;background:#fff;border-radius:10px;padding:16px;min-height:96px;display:flex;flex-direction:column;gap:8px;border-top:6px solid var(--c,#2F5F8A);font:600 15px/1.3 var(--body);color:var(--ink)}
+#ov button span{font:600 12px/1 var(--mono);color:var(--ink3)}
+#ov button.cur{outline:3px solid #7FB0DB}
+#ov h4{color:#fff;font:700 14px/1 var(--body);letter-spacing:.2em;text-transform:uppercase;max-width:1300px;margin:0 auto 18px}
+.hint{position:fixed;top:14px;right:16px;z-index:19;font:500 13px/1.4 var(--body);color:var(--ink2);background:rgba(255,255,255,.85);padding:8px 12px;border-radius:8px;transition:opacity .6s}
+
+@media (prefers-reduced-motion:reduce){
+  .slide.is-active,.slide.is-leaving,.is-active [data-a]{animation:none!important}
+  .slide.is-leaving{visibility:hidden}
+  .frag,.bar .fl,.stk span{transition:none!important;filter:none}
+}
+@media print{
+  @page{size:1920px 1080px;margin:0}
+  body{overflow:visible;background:#fff}
+  #viewport{position:static;display:block}
+  #stage{position:static;transform:none!important;box-shadow:none;height:auto;overflow:visible;background:none}
+  .slide{position:relative;opacity:1!important;visibility:visible!important;height:1080px;width:1920px;page-break-after:always;break-after:page;animation:none!important}
+  .slide [data-a]{animation:none!important}
+  .frag{opacity:1;transform:none;filter:none}
+  .bar .fl{width:calc(var(--v)*1%)!important;transition:none}
+  .stk span{width:calc(var(--v)*1%)!important;transition:none}
+  .pairs .pb span{width:calc(var(--v)*1%)!important;transition:none}
+  #ui,#prog,#notes,#ov,.hint{display:none!important}
+}
+</style>
+
+<div id="viewport"><div id="stage">
+
+<!-- 1 ------------------------------------------------------------ CAPA -->
+<section class="slide cover" data-title="Capa" data-by="e" style="--ox:78%;--oy:50%;padding:0">
+  <canvas class="net" data-net="light" width="980" height="1080" style="right:0;top:0;width:980px;height:1080px"></canvas>
+  <div style="position:absolute;left:120px;top:0;bottom:0;width:1080px;display:flex;flex-direction:column;justify-content:center">
+    <p class="eyebrow" data-a style="--i:0;color:var(--teal)">SMAC03 Grafos · Projeto final · Cenário 3</p>
+    <h1 data-a style="--i:1;font-size:92px;line-height:1.02;font-weight:700;letter-spacing:-.035em">Perfis de evasão no ensino superior a partir de grafos de similaridade</h1>
+    <p data-a style="--i:2;font:300 38px/1.3 var(--disp);color:var(--ink2);margin-top:34px;max-width:900px">Quatro abordagens em grafo, <b style="font-weight:600;color:var(--ink)">uma mesma régua</b> de avaliação, três momentos da trajetória do aluno</p>
+    <div data-a="draw" style="--i:3;height:3px;width:640px;background:var(--ink);margin:52px 0 32px"></div>
+    <div data-a style="--i:4;display:grid;grid-template-columns:auto 1fr;gap:14px 34px;font-size:25px;line-height:1.35">
+      <span class="small" style="letter-spacing:.16em;text-transform:uppercase;font-weight:600;font-size:18px;padding-top:4px">Equipe</span>
+      <span><strong>Erick A. Bonifácio, Augusto Juiz Ribeiro, Pedro Henrique Mendes da Silva, Wesley Batista Luz, João Paulo da Costa Santos</strong></span>
+      <span class="small" style="letter-spacing:.16em;text-transform:uppercase;font-weight:600;font-size:18px;padding-top:4px">Professor</span>
+      <span>Rafael de Magalhães Dias Frinhani <span class="small">· UNIFEI · novembro de 2026</span></span>
+    </div>
+  </div>
+  <aside class="notes"><p>Abertura (Erick). Apresentar o grupo e dizer em uma frase o que fizemos: modelamos os alunos como um grafo de semelhança e comparamos quatro abordagens, todas avaliadas do mesmo jeito.</p></aside>
+</section>
+
+<!-- 2 ------------------------------------------------------------ PERGUNTA -->
+<section class="slide" data-title="Pergunta e hipóteses" data-by="e" data-part="Introdução" data-src="Dados: UCI 697, Realinho et al. (2022)">
+  <p class="eyebrow" data-a style="--i:0">O problema</p>
+  <h2 class="t" data-a style="--i:1"><span class="lt">Indicadores isolados dizem quanto cada fator pesa, não como eles se combinam</span>O grafo ajuda a encontrar perfis de evasão, e qual combinação faz isso melhor?</h2>
+  <div class="g3 mt-l">
+    <div class="card" data-a style="--i:3"><span class="tag t">H1 · homofilia</span><p class="body mt-s">Alunos parecidos tendem a ter o mesmo desfecho; o grafo carrega informação sobre a evasão <strong>acima do acaso</strong>.</p></div>
+    <div class="card" data-a style="--i:4"><span class="tag t">H2 · distância</span><p class="body mt-s">A distância <strong>por associação</strong> gera um grafo que separa melhor os desfechos que a de Gower.</p></div>
+    <div class="card" data-a style="--i:5"><span class="tag t">H3 · método</span><p class="body mt-s">No mesmo grafo, a GraphSAGE <strong>prevê melhor</strong> que a atribuição pela comunidade do Leiden.</p></div>
+  </div>
+  <aside class="notes"><p>Erick. Problema: a instituição olha variável por variável. Pergunta de pesquisa e as três hipóteses que o resto da apresentação vai responder.</p></aside>
+</section>
+
+<!-- 3 ------------------------------------------------------------ DIVISOR I -->
+<section class="slide divider" data-title="Parte I · Modelagem" data-by="a" style="--ox:85%;--oy:22%">
+  <canvas class="net" data-net="dark" width="900" height="1080" style="right:0;top:0;width:900px;height:1080px"></canvas>
+  <div class="pn" data-a="scale" style="--i:0">I</div>
+  <div class="dv">
+    <h2 data-a style="--i:1"><span class="lt">Parte I</span>Modelagem</h2>
+    <p class="dsc" data-a style="--i:2">Que dados entram, em que momento, e como cada aluno vira um vértice ligado aos mais parecidos com ele.</p>
+    <div data-a style="--i:3"><span class="pres"><i>AP</i>Augusto Juiz Ribeiro e Pedro Henrique Mendes da Silva</span></div>
+  </div>
+  <aside class="notes"><p>Modeladores: Augusto e Pedro.</p></aside>
+</section>
+
+<!-- 4 ------------------------------------------------------------ DADOS E JANELAS -->
+<section class="slide" data-title="Dados e janelas" data-by="p" data-part="Parte I · Modelagem" data-src="UCI 697: 4.424 alunos, 36 atributos, sem ausentes">
+  <p class="eyebrow" data-a style="--i:0">Dados</p>
+  <h2 class="t" data-a style="--i:1"><span class="lt">3.630 alunos com desfecho final, 39,1% evadiram</span>Cada janela usa só o que a instituição já sabia naquele momento</h2>
+  <div class="mt-l" style="position:relative">
+    <div data-a="draw" style="--i:2;position:absolute;left:38px;right:38px;top:36px;height:4px;background:linear-gradient(90deg,var(--teal),var(--navy))"></div>
+    <div class="timeline">
+      <div class="st" data-a="pop" style="--i:3"><span class="num-dot" style="width:76px;height:76px;font-size:26px;background:var(--teal)">1</span><p class="k">Janela</p><h3>Matrícula</h3><p class="v">17<small>variáveis</small></p><p class="small mt-s" style="margin-top:12px">ingresso, família, idade, notas anteriores</p></div>
+      <div class="st" data-a="pop" style="--i:4"><span class="num-dot" style="width:76px;height:76px;font-size:26px;background:#2A5279">2</span><p class="k">Janela</p><h3>Fim do 1º semestre</h3><p class="v">26<small>variáveis</small></p><p class="small" style="margin-top:12px">+ aprovações, notas, mensalidade, bolsa</p></div>
+      <div class="st" data-a="pop" style="--i:5"><span class="num-dot" style="width:76px;height:76px;font-size:26px;background:#22405F">3</span><p class="k">Janela</p><h3>Fim do 2º semestre</h3><p class="v">32<small>variáveis</small></p><p class="small" style="margin-top:12px">+ aprovações e notas do 2º semestre</p></div>
+      <div class="st" data-a="pop" style="--i:6"><span class="num-dot" style="width:76px;height:76px;font-size:26px;background:var(--ink)">◎</span><p class="k">Alvo</p><h3>Desfecho</h3><p class="v" style="font-size:44px;padding-top:12px"><span class="hl-c">evadiu</span> <span style="color:var(--ink3);font-weight:300">×</span> <span class="hl-g">formou</span></p><p class="small" style="margin-top:12px">nunca entra na construção do grafo</p></div>
+    </div>
+  </div>
+  <div class="callout mt-l" data-a style="--i:8;max-width:1560px"><b class="k">Recortes</b><span>Os 794 <em>Enrolled</em> ficam fora (sem desfecho). Curso e macroeconomia saem da distância: a macro tem só 10 valores, um por ano de ingresso. Categorias com menos de 30 alunos viram “outros”.</span></div>
+  <aside class="notes"><p>Pedro. Mostrar que o dataset registra o aluno em momentos sucessivos e que cada janela respeita o que se sabia. Quanto mais tarde, mais informação e menos tempo para agir. Ressalva do 2º semestre: 51% dos evadidos já têm zero aprovações nele, então essa janela registra a evasão em curso.</p></aside>
+</section>
+
+<!-- 5 ------------------------------------------------------------ GRAFO -->
+<section class="slide" data-title="O grafo" data-by="a" data-part="Parte I · Modelagem" data-src="Um grafo por janela e por distância">
+  <div class="g2" style="grid-template-columns:1.12fr .88fr;gap:80px;align-items:start">
+    <div>
+      <p class="eyebrow" data-a style="--i:0">Modelo formal</p>
+      <h2 class="t" data-a style="--i:1;font-size:62px">Cada aluno é ligado aos mais parecidos com ele, e a semelhança tem de ser recíproca</h2>
+      <dl class="formal mt" data-a style="--i:2">
+        <dt>Grafo</dt><dd><span class="math">G = (V, E, w)</span>, simples, não direcionado, ponderado</dd>
+        <dt>Vértice</dt><dd>um aluno, a unidade sobre a qual a instituição decide</dd>
+        <dt>Aresta</dt><dd><span class="math">{i, j}</span> se cada um está entre os <strong>40 mais próximos</strong> do outro (kNN mútuo)</dd>
+        <dt>Peso</dt><dd><span class="math">w = 1 − d / d<sub>máx</sub></span>, a semelhança entre os dois</dd>
+        <dt>Atributos</dt><dd>as variáveis da janela; o desfecho fica de fora</dd>
+      </dl>
+    </div>
+    <div class="col" style="gap:22px;padding-top:40px">
+      <p class="eyebrow" data-a style="--i:3;margin:0">Por que k = 40</p>
+      <div class="card" data-a="right" style="--i:4;padding:28px 32px"><span class="tag c">k = 20</span><p class="body" style="margin-top:14px">até <strong>80 alunos isolados</strong> e 92 componentes</p></div>
+      <div class="card t" data-a="right" style="--i:5;padding:28px 32px"><span class="tag t">k = 40</span><p class="body" style="margin-top:14px"><strong>95% a 99,9%</strong> dos alunos no maior componente, vizinhanças coesas</p></div>
+      <div class="card" data-a="right" style="--i:6;padding:28px 32px"><span class="tag c">k = 60</span><p class="body" style="margin-top:14px">liga alunos pouco parecidos; <strong>comunidades se fundem</strong></p></div>
+    </div>
+  </div>
+  <aside class="notes"><p>Augusto. Não existe vínculo real entre alunos no dataset, então a relação modelada é a semelhança. kNN mútuo deixa a relação simétrica e impede hubs (grau máximo 40). O desfecho fora do grafo evita vazamento. k=40 fica entre ln N ≈ 8 (fragmenta) e √N ≈ 60; testamos 20 e 60 e os resultados mudam no máximo 0,022.</p></aside>
+</section>
+
+<!-- 6 ------------------------------------------------------------ DISTANCIAS -->
+<section class="slide" data-title="Duas distâncias" data-by="p" data-part="Parte I · Modelagem" data-src="Gower (1971); van de Velden et al. (2026), pacote manydist">
+  <p class="eyebrow" data-a style="--i:0">Como medir “parecido”</p>
+  <h2 class="t" data-a style="--i:1">Os dados são mistos, então testamos duas formas de medir a semelhança</h2>
+  <div class="g2 mt-l" style="gap:40px">
+    <div class="card" data-a="left" style="--i:2;padding:46px">
+      <span class="tag">Linha cheia nos gráficos</span>
+      <h3 class="mt-s" style="font-size:44px">Gower</h3>
+      <p class="body mt-s">Média das diferenças variável por variável. Duas categorias diferentes estão <strong>sempre à mesma distância</strong>. É a referência para dados mistos.</p>
+    </div>
+    <div class="card" data-a="right" style="--i:3;padding:46px">
+      <span class="tag">Linha tracejada nos gráficos</span>
+      <h3 class="mt-s" style="font-size:44px">Associação</h3>
+      <p class="body mt-s">Duas categorias ficam próximas quando os alunos que as têm <strong>se parecem no resto</strong>. Corrige o viés de Gower e pesa mais as categorias raras.</p>
+    </div>
+  </div>
+  <div class="frag mt"><div class="callout t"><b class="k">Implementação</b><span>Não havia versão em Python: o grupo reimplementou o <em>preset</em> <strong>u_dep</strong> e conferiu contra o pacote R, com correlação de <strong>1,000</strong> em 500 alunos.</span></div></div>
+  <aside class="notes"><p>Pedro. Testar duas distâncias mostra se os achados dependem dessa escolha. Isso é a hipótese H2.</p></aside>
+</section>
+
+<!-- 7 ------------------------------------------------------------ VARIACOES -->
+<section class="slide" data-title="As quatro variações" data-by="p" data-part="Parte I · Modelagem" data-src="Desenho fatorial 2 × 2: muda só a distância e o método">
+  <p class="eyebrow" data-a style="--i:0">Variações</p>
+  <h2 class="t" data-a style="--i:1"><span class="lt">Dados, janelas, k, grafo e avaliação são idênticos</span>Quatro variações: duas distâncias vezes dois métodos</h2>
+  <div class="mx mt-l">
+    <div></div>
+    <div class="h" data-a="pop" style="--i:2;background:var(--violet)">Leiden<small>detecta comunidades: que perfis existem?</small></div>
+    <div class="h" data-a="pop" style="--i:3;background:var(--sage-d)">GraphSAGE<small>rede neural em grafos: a vizinhança ajuda a prever?</small></div>
+    <div class="rl" data-a="left" style="--i:4">Gower<small>linha cheia</small></div>
+    <div class="cell" data-a="scale" style="--i:5"><b style="color:var(--violet)">V1</b>Gower + Leiden</div>
+    <div class="cell" data-a="scale" style="--i:6"><b style="color:var(--sage-d)">V2</b>Gower + GraphSAGE</div>
+    <div class="rl" data-a="left" style="--i:7">Associação<small>linha tracejada</small></div>
+    <div class="cell" data-a="scale" style="--i:8"><b style="color:var(--violet)">V3</b>Associação + Leiden</div>
+    <div class="cell" data-a="scale" style="--i:9"><b style="color:var(--sage-d)">V4</b>Associação + GraphSAGE</div>
+  </div>
+  <p class="small mt" data-a style="--i:10">Cores fixas em todo o trabalho: <strong style="color:var(--violet)">roxo = Leiden</strong>, <strong style="color:var(--sage-d)">âmbar = GraphSAGE</strong>, <strong class="hl-c">vermelho = evadiu</strong>, <strong class="hl-g">verde = formou</strong>.</p>
+  <aside class="notes"><p>Pedro. Leiden é descritivo (agrupa), GraphSAGE é preditivo (classifica). Por isso a avaliação vai ter duas camadas. Leiden escolhido por garantir comunidades conectadas (Louvain não garante); GraphSAGE por ser indutiva, classifica aluno novo sem retreino.</p></aside>
+</section>
+
+<!-- 8 ------------------------------------------------------------ DIVISOR II -->
+<section class="slide divider" data-title="Parte II · Solução e teste" data-by="w" style="--ox:15%;--oy:25%">
+  <canvas class="net" data-net="dark" width="900" height="1080" style="right:0;top:0;width:900px;height:1080px"></canvas>
+  <div class="pn" data-a="scale" style="--i:0">II</div>
+  <div class="dv">
+    <h2 data-a style="--i:1"><span class="lt">Parte II</span>Solução e plano de teste</h2>
+    <p class="dsc" data-a style="--i:2">Como o protótipo funciona e como as quatro variações foram colocadas na mesma régua.</p>
+    <div data-a style="--i:3"><span class="pres"><i>WJ</i>Wesley Batista Luz e João Paulo da Costa Santos</span></div>
+  </div>
+  <aside class="notes"><p>Desenvolvedores: Wesley e João.</p></aside>
+</section>
+
+<!-- 9 ------------------------------------------------------------ FLUXO -->
+<section class="slide" data-title="Fluxo do protótipo" data-by="w" data-part="Parte II · Solução" data-src="Fases da CRISP-NET (Acuña-Cid et al., 2025)">
+  <p class="eyebrow" data-a style="--i:0">Protótipo</p>
+  <h2 class="t" data-a style="--i:1">Um único fluxo em Python, do arquivo de dados até as tabelas e figuras</h2>
+  <div class="mt-l" style="position:relative">
+    <div data-a="draw" style="--i:2;position:absolute;left:38px;right:38px;top:36px;height:4px;background:linear-gradient(90deg,var(--teal),var(--violet),var(--sage))"></div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:24px;position:relative">
+      <div data-a="pop" style="--i:3"><span class="num-dot" style="width:76px;height:76px;font-size:26px;background:var(--teal)">1</span><p class="body mt-s"><strong>Dados e janela</strong><br>seleção das variáveis do momento</p></div>
+      <div data-a="pop" style="--i:4"><span class="num-dot" style="width:76px;height:76px;font-size:26px;background:var(--teal)">2</span><p class="body mt-s"><strong>Distância</strong><br>Gower ou associação, 3.630 × 3.630</p></div>
+      <div data-a="pop" style="--i:5"><span class="num-dot" style="width:76px;height:76px;font-size:26px;background:var(--navy)">3</span><p class="body mt-s"><strong>Grafo</strong><br>kNN mútuo, k = 40, sem o desfecho</p></div>
+      <div data-a="pop" style="--i:6"><span class="num-dot" style="width:76px;height:76px;font-size:26px;background:var(--violet)">4</span><p class="body mt-s"><strong>Método</strong><br><span class="hl-v">Leiden</span> ou <span class="hl-s">GraphSAGE</span></p></div>
+      <div data-a="pop" style="--i:7"><span class="num-dot" style="width:76px;height:76px;font-size:26px;background:var(--sage-d)">5</span><p class="body mt-s"><strong>Avaliação</strong><br>comum e específica</p></div>
+    </div>
+  </div>
+  <div class="g3 mt-l" data-a style="--i:9">
+    <div class="card" style="padding:28px 32px"><p class="small"><span class="math" style="color:var(--teal-d)">src/grafo_evasao.py</span><br>núcleo: dados, distâncias, grafo, Leiden, GraphSAGE</p></div>
+    <div class="card" style="padding:28px 32px"><p class="small"><span class="math" style="color:var(--teal-d)">avaliacao_unica.py</span><br>as 50 divisões 80/20 para todos os métodos</p></div>
+    <div class="card" style="padding:28px 32px"><p class="small"><span class="math" style="color:var(--teal-d)">metricas_leiden.py</span><br>avaliação específica das comunidades</p></div>
+  </div>
+  <aside class="notes"><p>Wesley. igraph, leidenalg, PyTorch Geometric, scikit-learn. Reprodutível: kNN desempata pelo índice, Leiden com semente fixa. Custos: distância 3 a 22 s, kNN cerca de 1 s, Leiden menos de 1 s, um treino da GraphSAGE 5 a 9 s em CPU.</p></aside>
+</section>
+
+<!-- 10 ------------------------------------------------------------ CODIGO -->
+<section class="slide" data-title="Trecho do código" data-by="w" data-part="Parte II · Solução" data-src="src/grafo_evasao.py, função knn_mutuo">
+  <div class="g2" style="grid-template-columns:.8fr 1.2fr;gap:64px;height:100%;align-items:center">
+    <div>
+      <p class="eyebrow" data-a style="--i:0">Código</p>
+      <h2 class="t" data-a style="--i:1;font-size:58px">O kNN mútuo cabe em uma linha: a matriz de vizinhos e a sua transposta</h2>
+      <p class="body mt" data-a style="--i:3"><span class="math">A</span> marca os 40 vizinhos de cada aluno. <span class="math">A &amp; A.T</span> mantém só os pares em que a escolha é <strong>recíproca</strong>. O peso é a semelhança entre os dois.</p>
+    </div>
+    <div class="code" data-a="right" style="--i:2">
+      <div class="ln" data-n="1"><span><span class="k">def</span> <span class="f">knn_mutuo</span>(D, k=<span class="nu">40</span>):</span></div>
+      <div class="ln" data-n="2"><span>    Dm = np.round(D, <span class="nu">6</span>)</span></div>
+      <div class="ln" data-n="3"><span>    np.fill_diagonal(Dm, np.inf)</span></div>
+      <div class="ln" data-n="4"><span>    viz = np.argsort(Dm, axis=<span class="nu">1</span>, kind=<span class="s">"stable"</span>)[:, :k]</span></div>
+      <div class="ln" data-n="5"><span>    A = np.zeros((N, N), <span class="k">bool</span>)</span></div>
+      <div class="ln" data-n="6"><span>    A[np.repeat(np.arange(N), k), viz.ravel()] = <span class="k">True</span></span></div>
+      <div class="ln good" data-n="7"><span>    i, j = np.where(np.triu(A &amp; A.T, <span class="nu">1</span>))</span></div>
+      <div class="ln" data-n="8"><span>    <span class="k">return</span> i, j, <span class="nu">1</span> - D[i, j] / D.max()  <span class="c"># peso</span></span></div>
+    </div>
+  </div>
+  <aside class="notes"><p>Wesley. Trecho fundamental pedido nas diretrizes. "stable" desempata pelo índice do aluno, o que deixa o grafo e o Leiden reprodutíveis.</p></aside>
+</section>
+
+<!-- 11 ------------------------------------------------------------ METODOS -->
+<section class="slide" data-title="Os dois métodos" data-by="w" data-part="Parte II · Solução" data-src="Traag et al. (2019); Hamilton et al. (2017)">
+  <p class="eyebrow" data-a style="--i:0">Métodos</p>
+  <h2 class="t" data-a style="--i:1">Leiden agrupa, GraphSAGE classifica; os dois recebem o mesmo grafo</h2>
+  <div class="g2 mt-l" style="gap:40px">
+    <div class="card v" data-a="left" style="--i:2;padding:46px">
+      <h3 style="color:var(--violet-d);font-size:42px">Leiden · V1 e V3</h3>
+      <p class="body mt-s">Maximiza a modularidade e encontra comunidades <strong>sem ver o desfecho</strong>.</p>
+      <p class="body mt-s">Para prever, cada aluno de teste recebe a <strong>taxa de evasão da sua comunidade</strong>, calculada só com o treino.</p>
+    </div>
+    <div class="card a" data-a="right" style="--i:3;padding:46px">
+      <h3 style="color:var(--sage-d);font-size:42px">GraphSAGE · V2 e V4</h3>
+      <p class="body mt-s">Aprende com os atributos do aluno <strong>e a média dos vizinhos</strong>: 2 camadas, 64 neurônios.</p>
+      <p class="body mt-s">É <strong>indutiva</strong>: classifica um ingressante novo sem retreinar o modelo.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Wesley. A taxa da comunidade é suavizada (como se cada comunidade tivesse mais 5 alunos médios) para que grupos pequenos não deem 0% ou 100% por acaso. GraphSAGE com configuração padrão, sem ajuste fino (limitação declarada).</p></aside>
+</section>
+
+<!-- 12 ------------------------------------------------------------ PLANO DE TESTE -->
+<section class="slide" data-title="Plano de teste" data-by="j" data-part="Parte II · Plano de teste" data-src="Shchur et al. (2018): mesmas divisões, repetidas, para todos os modelos">
+  <p class="eyebrow" data-a style="--i:0">Plano de teste</p>
+  <h2 class="t" data-a style="--i:1"><span class="lt">Métodos diferentes pedem duas camadas de avaliação</span>Uma régua comum para comparar, e uma régua própria de cada método</h2>
+  <div class="g2 mt" style="gap:40px">
+    <div class="card dk" data-a="left" style="--i:2;padding:44px">
+      <span class="tag" style="background:rgba(255,255,255,.12);color:#fff">Camada comum</span>
+      <div class="row mt-s" style="gap:30px;align-items:flex-end"><p style="font:700 96px/0.9 var(--disp);color:#fff">50</p><p class="body">divisões 80/20 por janela<br>(5 dobras × 10 repetições)</p></div>
+      <p class="body mt-s">As 4 variações treinam com os mesmos 80% e testam nos mesmos 20%. Mesmas métricas: <strong>F1 macro</strong>, <strong>AUC</strong> e <strong>revocação da evasão</strong>.</p>
+      <p class="body" style="margin-top:14px;color:#AFC0D6">Testes de Friedman e Wilcoxon entre variações que diferem em um só fator.</p>
+    </div>
+    <div class="col" style="gap:28px">
+      <div class="card v" data-a="right" style="--i:3;padding:34px 40px"><span class="tag v">Camada específica · Leiden</span><p class="body mt-s" style="margin-top:16px">Modularidade, V de Cramér entre comunidade e desfecho, teste com o desfecho <strong>embaralhado 1.000 vezes</strong> e homofilia.</p></div>
+      <div class="card a" data-a="right" style="--i:4;padding:34px 40px"><span class="tag a">Camada específica · GraphSAGE</span><p class="body mt-s" style="margin-top:16px"><strong>Estabilidade</strong>: variação do desempenho entre as 50 divisões, entre as duas distâncias e com k = 20 e 60.</p></div>
+    </div>
+  </div>
+  <aside class="notes"><p>João. Repetir 50 vezes evita que um sorteio favorável decida a comparação. O grafo usa todos os alunos, mas nenhum desfecho; os rótulos de teste nunca entram no treino. Referência trivial: prever sempre "formou" dá F1 0,38 e AUC 0,50. Testes de Friedman e Wilcoxon pareado.</p></aside>
+</section>
+
+<!-- 12b ---------------------------------------------------------- DEMONSTRACAO -->
+<section class="slide" data-title="Demonstração" data-by="j" data-part="Parte II · Demonstração" data-src="Comandos do repositório; painel com os resultados salvos em resultados/avaliacao_unica/">
+  <div style="display:grid;grid-template-columns:560px 1fr;gap:56px;align-items:center;height:100%">
+    <div>
+      <p class="eyebrow" data-a style="--i:0">Demonstração do protótipo</p>
+      <h2 class="t" data-a style="--i:1;font-size:52px">O fluxo roda de ponta a ponta no notebook</h2>
+      <div class="code mt" data-a="left" style="--i:2;font-size:21px;padding:22px 0">
+        <div class="ln" data-n="1"><span><span class="c"># grafo + Leiden + figura, ~16 s</span></span></div>
+        <div class="ln good" data-n="2"><span>python figuras_artigo.py</span></div>
+        <div class="ln" data-n="3"><span><span class="c"># tabela, testes e figura, ~4 s</span></span></div>
+        <div class="ln good" data-n="4"><span>python resumo_avaliacao.py</span></div>
+        <div class="ln" data-n="5"><span><span class="c"># 1.000 permutações, ~1,5 min</span></span></div>
+        <div class="ln good" data-n="6"><span>python metricas_leiden.py</span></div>
+      </div>
+      <p class="small mt-s" data-a style="--i:3">Ao lado, os resultados já salvos: escolha a janela, a distância e as cores.</p>
+    </div>
+    <div class="demo" id="demo" data-a="right" style="--i:2">
+      <div class="ctl">
+        <div class="grp"><p>Janela</p><div class="seg" data-g="jan"><button class="on" data-v="1_matricula">Matrícula</button><button data-v="3_fim_1sem">1º semestre</button><button data-v="4_fim_2sem">2º semestre</button></div></div>
+        <div class="grp"><p>Distância</p><div class="seg" data-g="dist"><button class="on" data-v="gower">Gower</button><button data-v="assoc">Associação</button></div></div>
+        <div class="grp"><p>Cores</p><div class="seg" data-g="cor"><button class="on" data-v="com">Comunidades</button><button data-v="des">Desfecho</button></div></div>
+      </div>
+      <div class="dview">
+        <img class="on" data-k="demo_1_matricula_gower_com" alt="Grafo: 1_matricula, gower, com" src="data:image/png;base64,{{IMG:demo_1_matricula_gower_com}}">
+        <img data-k="demo_1_matricula_gower_des" alt="Grafo: 1_matricula, gower, des" src="data:image/png;base64,{{IMG:demo_1_matricula_gower_des}}">
+        <img data-k="demo_1_matricula_assoc_com" alt="Grafo: 1_matricula, assoc, com" src="data:image/png;base64,{{IMG:demo_1_matricula_assoc_com}}">
+        <img data-k="demo_1_matricula_assoc_des" alt="Grafo: 1_matricula, assoc, des" src="data:image/png;base64,{{IMG:demo_1_matricula_assoc_des}}">
+        <img data-k="demo_3_fim_1sem_gower_com" alt="Grafo: 3_fim_1sem, gower, com" src="data:image/png;base64,{{IMG:demo_3_fim_1sem_gower_com}}">
+        <img data-k="demo_3_fim_1sem_gower_des" alt="Grafo: 3_fim_1sem, gower, des" src="data:image/png;base64,{{IMG:demo_3_fim_1sem_gower_des}}">
+        <img data-k="demo_3_fim_1sem_assoc_com" alt="Grafo: 3_fim_1sem, assoc, com" src="data:image/png;base64,{{IMG:demo_3_fim_1sem_assoc_com}}">
+        <img data-k="demo_3_fim_1sem_assoc_des" alt="Grafo: 3_fim_1sem, assoc, des" src="data:image/png;base64,{{IMG:demo_3_fim_1sem_assoc_des}}">
+        <img data-k="demo_4_fim_2sem_gower_com" alt="Grafo: 4_fim_2sem, gower, com" src="data:image/png;base64,{{IMG:demo_4_fim_2sem_gower_com}}">
+        <img data-k="demo_4_fim_2sem_gower_des" alt="Grafo: 4_fim_2sem, gower, des" src="data:image/png;base64,{{IMG:demo_4_fim_2sem_gower_des}}">
+        <img data-k="demo_4_fim_2sem_assoc_com" alt="Grafo: 4_fim_2sem, assoc, com" src="data:image/png;base64,{{IMG:demo_4_fim_2sem_assoc_com}}">
+        <img data-k="demo_4_fim_2sem_assoc_des" alt="Grafo: 4_fim_2sem, assoc, des" src="data:image/png;base64,{{IMG:demo_4_fim_2sem_assoc_des}}">
+        <div class="lg legend" id="dlg" hidden><span><i style="background:var(--coral)"></i>evadiu</span><span><i style="background:var(--green)"></i>formou</span></div>
+      </div>
+      <div class="dmet">
+        <div><b id="mC">12</b><span>comunidades (≥ 30 alunos)</span></div>
+        <div><b id="mQ">0,67</b><span>modularidade Q</span></div>
+        <div><b id="mE">19–70%</b><span>evasão entre comunidades</span></div>
+        <div class="v"><b id="mV">0,32</b><span id="mVn">V de Cramér (acaso ≤ 0,10)</span></div>
+        <div class="v"><b id="mF1L">0,631</b><span>F1 do Leiden</span></div>
+        <div class="s"><b id="mF1S">0,675</b><span>F1 da GraphSAGE</span></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><p>João. Ao vivo: rodar os dois primeiros comandos no terminal (cerca de 20 s no total) e mostrar a figura e a tabela geradas. O terceiro leva 1,5 min: iniciar e comentar enquanto roda, ou pular. Se algo falhar, usar o painel: ele mostra os resultados salvos das 6 combinações. Sugestão de roteiro no painel: matrícula, Gower, comunidades → desfecho; depois 1º semestre, associação, para mostrar a separação crescer (V de 0,32 para 0,58).</p></aside>
+</section>
+
+<!-- 13 ------------------------------------------------------------ DIVISOR III -->
+<section class="slide divider" data-title="Parte III · Resultados" data-by="j" style="--ox:85%;--oy:78%">
+  <canvas class="net" data-net="dark" width="900" height="1080" style="right:0;top:0;width:900px;height:1080px"></canvas>
+  <div class="pn" data-a="scale" style="--i:0">III</div>
+  <div class="dv">
+    <h2 data-a style="--i:1"><span class="lt">Parte III</span>Resultados</h2>
+    <p class="dsc" data-a style="--i:2">O que a estrutura do grafo revela, como as quatro variações se saíram e quais perfis apareceram.</p>
+    <div data-a style="--i:3"><span class="pres"><i>JA</i>João Paulo, Augusto e Pedro</span></div>
+  </div>
+  <aside class="notes"><p>Resultados.</p></aside>
+</section>
+
+<!-- 14a ---------------------------------------------------------- GRAFO MATRICULA -->
+<section class="slide fig fade" data-title="Grafo da matrícula" data-by="a" data-part="Parte III · Estrutura" data-src="Matrícula · distância de Gower · kNN mútuo, k = 40 · 3.630 alunos">
+  <div class="figtop"><div><p class="eyebrow" data-a style="--i:0">Grafo da matrícula · Gower</p><h2 data-a style="--i:1">12 comunidades encontradas sem olhar o desfecho</h2></div><p class="side" data-a style="--i:2">cada cor é uma comunidade do Leiden<br>próximo: o mesmo grafo pelo desfecho</p></div>
+  <div class="gview" data-a="scale" style="--i:2"><img alt="12 comunidades encontradas sem olhar o desfecho" src="data:image/png;base64,{{IMG:matricula_gower_comunidades}}"></div>
+  <aside class="notes"><p>Augusto. Primeiro as comunidades, cada uma com a sua cor. Na seta, o mesmo grafo, nas mesmas posições, pintado pelo desfecho, que não entrou na construção. As regiões vermelhas coincidem com algumas comunidades: é a homofilia.</p></aside>
+</section>
+
+<section class="slide fig fade still" data-title="Grafo da matrícula · desfecho" data-by="a" data-part="Parte III · Estrutura" data-src="Matrícula · distância de Gower · kNN mútuo, k = 40 · 3.630 alunos">
+  <div class="figtop"><div><p class="eyebrow">Grafo da matrícula · Gower</p><h2>O mesmo grafo, pintado pelo desfecho real</h2></div><div class="legend big"><span><i style="background:var(--coral)"></i>evadiu</span><span><i style="background:var(--green)"></i>formou</span></div></div>
+  <div class="gview"><img alt="O mesmo grafo, pintado pelo desfecho real" src="data:image/png;base64,{{IMG:matricula_gower_desfecho}}"></div>
+  <aside class="notes"><p>Mesmas posições do slide anterior; só as cores mudam. O desfecho não entrou na construção do grafo.</p></aside>
+</section>
+
+<!-- 14b ---------------------------------------------------------- DADOS MATRICULA -->
+<section class="slide" data-title="Comunidades da matrícula" data-by="a" data-part="Parte III · Estrutura" data-src="Avaliação específica do Leiden · Tabela 2 do relatório">
+  <p class="eyebrow" data-a style="--i:0">Avaliação específica do Leiden · matrícula</p>
+  <h2 class="t" data-a style="--i:1;font-size:56px">A evasão vai de 19% a 70% entre as comunidades</h2>
+  <div style="display:grid;grid-template-columns:1060px 1fr;gap:64px;margin-top:36px;align-items:center">
+    <div data-a="scale" style="--i:2"><img class="figimg" alt="Composição de cada comunidade: evadiu e formou" src="data:image/png;base64,{{IMG:matricula_gower_composicao}}"><p class="cap">Cada barra é uma comunidade (nº de alunos abaixo); a marca colorida é a cor da comunidade no grafo</p></div>
+    <div class="col" style="gap:38px"><div class="stat" data-a="right" style="--i:3;--by:var(--violet)"><div class="n" style="font-size:64px">V = 0,32</div><p class="l" style="font-size:23px;margin-top:8px">associação entre comunidade e desfecho; com o desfecho embaralhado, no máximo 0,10 (p = 0,001)</p></div><div class="stat" data-a="right" style="--i:4;--by:var(--violet)"><div class="n" style="font-size:64px">61%</div><p class="l" style="font-size:23px;margin-top:8px">das arestas ligam alunos com o mesmo desfecho; ao acaso, 52%</p></div><div class="stat" data-a="right" style="--i:5;--by:var(--coral)"><div class="n" style="font-size:64px">C9 · 70%</div><p class="l" style="font-size:23px;margin-top:8px">142 alunos, a maioria mais velha e com pais de escolaridade desconhecida</p></div></div>
+  </div>
+  <aside class="notes"><p>Augusto. Ordem do maior para o menor risco. C9 é o grupo de maior risco e aparece também com a distância por associação (95% dos alunos de C9 estão no grupo equivalente).</p></aside>
+</section>
+
+<!-- 14c ---------------------------------------------------------- GRAFO 1o SEM -->
+<section class="slide fig fade" data-title="Grafo do 1º semestre" data-by="p" data-part="Parte III · Estrutura" data-src="Fim do 1º semestre · distância por associação · kNN mútuo, k = 40">
+  <div class="figtop"><div><p class="eyebrow" data-a style="--i:0">Grafo do fim do 1º semestre · associação</p><h2 data-a style="--i:1">Com as notas do semestre, 18 comunidades</h2></div><p class="side" data-a style="--i:2">cada cor é uma comunidade do Leiden<br>próximo: o mesmo grafo pelo desfecho</p></div>
+  <div class="gview" data-a="scale" style="--i:2"><img alt="Com as notas do semestre, 18 comunidades" src="data:image/png;base64,{{IMG:1sem_associacao_comunidades}}"></div>
+  <aside class="notes"><p>Pedro. Mesma leitura do slide da matrícula. Com aprovações, notas e situação financeira do 1º semestre, aparecem comunidades quase todas vermelhas ou quase todas verdes.</p></aside>
+</section>
+
+<section class="slide fig fade still" data-title="Grafo do 1º semestre · desfecho" data-by="p" data-part="Parte III · Estrutura" data-src="Fim do 1º semestre · distância por associação · kNN mútuo, k = 40">
+  <div class="figtop"><div><p class="eyebrow">Grafo do fim do 1º semestre · associação</p><h2>Agora o desfecho se separa muito mais</h2></div><div class="legend big"><span><i style="background:var(--coral)"></i>evadiu</span><span><i style="background:var(--green)"></i>formou</span></div></div>
+  <div class="gview"><img alt="Agora o desfecho se separa muito mais" src="data:image/png;base64,{{IMG:1sem_associacao_desfecho}}"></div>
+  <aside class="notes"><p>Mesmas posições do slide anterior; só as cores mudam. O desfecho não entrou na construção do grafo.</p></aside>
+</section>
+
+<!-- 14d ---------------------------------------------------------- DADOS 1o SEM -->
+<section class="slide" data-title="Comunidades do 1º semestre" data-by="p" data-part="Parte III · Estrutura" data-src="Avaliação específica do Leiden · Tabela 2 do relatório">
+  <p class="eyebrow" data-a style="--i:0">Avaliação específica do Leiden · fim do 1º semestre</p>
+  <h2 class="t" data-a style="--i:1;font-size:56px">No 1º semestre, a evasão vai de 4% a 96%</h2>
+  <div style="display:grid;grid-template-columns:1060px 1fr;gap:64px;margin-top:36px;align-items:center">
+    <div data-a="scale" style="--i:2"><img class="figimg" alt="Composição de cada comunidade: evadiu e formou" src="data:image/png;base64,{{IMG:1sem_associacao_composicao}}"><p class="cap">Cada barra é uma comunidade (nº de alunos abaixo); a marca colorida é a cor da comunidade no grafo</p></div>
+    <div class="col" style="gap:38px"><div class="stat" data-a="right" style="--i:3;--by:var(--violet)"><div class="n" style="font-size:64px">V = 0,58</div><p class="l" style="font-size:23px;margin-top:8px">era 0,33 na matrícula; chega a 0,62 no 2º semestre</p></div><div class="stat" data-a="right" style="--i:4;--by:var(--violet)"><div class="n" style="font-size:64px">78%</div><p class="l" style="font-size:23px;margin-top:8px">das arestas ligam alunos com o mesmo desfecho (61% na matrícula)</p></div><div class="stat" data-a="right" style="--i:5;--by:var(--coral)"><div class="n" style="font-size:64px">C7 · 96%</div><p class="l" style="font-size:23px;margin-top:8px">267 alunos com notas 1,5 desvio-padrão abaixo da média</p></div></div>
+  </div>
+  <aside class="notes"><p>Pedro. A separação cresce ao longo da trajetória. No outro extremo, três comunidades de 4% a 8% de evasão: mulheres jovens, notas acima da média, bolsistas.</p></aside>
+</section>
+
+<!-- 15 ------------------------------------------------------------ AVALIACAO COMUM -->
+<section class="slide" data-title="Avaliação comum" data-by="j" data-part="Parte III · Avaliação comum" data-src="Média de 50 divisões 80/20 por janela · Tabela 3 do relatório">
+  <div class="g2" style="grid-template-columns:.95fr 1.05fr;gap:70px;align-items:center;height:100%">
+    <div>
+      <p class="eyebrow" data-a style="--i:0">Mesma régua</p>
+      <h2 class="t" data-a style="--i:1;font-size:58px">A GraphSAGE é a melhor das quatro em todas as janelas</h2>
+      <div class="bars mt" style="--by:var(--sage-d)">
+        <p class="small" data-a style="--i:2;margin-bottom:-12px">F1 macro no fim do 1º semestre</p>
+        <div class="bar" style="--v:86.5;--i:0"><div class="lab"><span><strong>V4</strong> Associação + GraphSAGE</span><b>0,865</b></div><div class="trk"><div class="fl"></div></div></div>
+        <div class="bar" style="--v:86.3;--i:1"><div class="lab"><span><strong>V2</strong> Gower + GraphSAGE</span><b>0,863</b></div><div class="trk"><div class="fl"></div></div></div>
+        <div class="bar" style="--v:74.0;--i:2;--by:var(--violet)"><div class="lab"><span><strong>V3</strong> Associação + Leiden</span><b>0,740</b></div><div class="trk"><div class="fl"></div></div></div>
+        <div class="bar" style="--v:70.1;--i:3;--by:var(--violet)"><div class="lab"><span><strong>V1</strong> Gower + Leiden</span><b>0,701</b></div><div class="trk"><div class="fl"></div></div></div>
+        <div class="bar" style="--v:38;--i:4;--by:var(--neutral)"><div class="lab"><span>chute “sempre formou”</span><b>0,38</b></div><div class="trk"><div class="fl"></div></div></div>
+      </div>
+    </div>
+    <div data-a="scale" style="--i:3">
+      <img class="figimg" alt="F1 e AUC das quatro variações e das referências nas três janelas" src="data:image/png;base64,{{IMG:comparacao}}">
+      <p class="cap"><b>Figura 3</b> · F1 e AUC ao longo das três janelas; linha cheia: Gower, tracejada: associação</p>
+    </div>
+  </div>
+  <aside class="notes"><p>João. F1 da GraphSAGE: 0,67 na matrícula, 0,86 no 1º semestre, 0,89 no 2º. Leiden: 0,63, 0,70 a 0,74, 0,76. Friedman p &lt; 0,001 nas três janelas. As duas GraphSAGE ficam sobrepostas: a distância não muda o resultado dela.</p></aside>
+</section>
+
+<!-- 16 ------------------------------------------------------------ ACHADOS -->
+<section class="slide" data-title="Quatro achados" data-by="j" data-part="Parte III · Avaliação comum" data-src="Wilcoxon pareado por divisão; porcentagens = divisões em que a diferença se repete">
+  <p class="eyebrow" data-a style="--i:0">O que a comparação mostra</p>
+  <h2 class="t" data-a style="--i:1">Quatro padrões se repetem nas três janelas</h2>
+  <div class="g2 mt" style="gap:32px">
+    <div class="card" data-a style="--i:2;padding:34px 40px"><div class="row" style="gap:22px;align-items:center"><span class="sym b">1</span><h3 style="margin:0">O método pesa mais que a distância</h3></div><p class="body mt-s" style="margin-top:16px">GraphSAGE supera o Leiden em <strong>98% a 100%</strong> das divisões, por 0,04 a 0,16 de F1.</p></div>
+    <div class="card" data-a style="--i:3;padding:34px 40px"><div class="row" style="gap:22px;align-items:center"><span class="sym" style="background:var(--violet)">2</span><h3 style="margin:0">A distância só importa para o Leiden</h3></div><p class="body mt-s" style="margin-top:16px">Associação ganha AUC nas três janelas (até <strong>+0,06</strong> no 1º sem.); nas GraphSAGE, diferença ≤ 0,003.</p></div>
+    <div class="card v" data-a style="--i:4;padding:34px 40px"><div class="row" style="gap:22px;align-items:center"><span class="sym" style="background:var(--violet)">3</span><h3 style="margin:0">Na matrícula, o Leiden acha mais evadidos</h3></div><p class="body mt-s" style="margin-top:16px">Revocação de <strong>0,65 a 0,68</strong> contra 0,62 a 0,64; depois, a GraphSAGE acha <strong>81% a 85%</strong>.</p></div>
+    <div class="card t" data-a style="--i:5;padding:34px 40px"><div class="row" style="gap:22px;align-items:center"><span class="sym ok" style="background:var(--teal)">4</span><h3 style="margin:0">O 1º semestre concentra o ganho</h3></div><p class="body mt-s" style="margin-top:16px">F1 sobe <strong>0,19</strong> da matrícula ao 1º semestre e só <strong>0,03</strong> do 1º ao 2º.</p></div>
+  </div>
+  <aside class="notes"><p>João. Achado 3: com pouca informação, o Leiden marca grupos inteiros como risco, por isso encontra mais evadidos, com F1 menor. A GraphSAGE é estável: desvio de 0,010 a 0,016 em F1 e variação de no máximo 0,008 com k = 20 e 60. Achado 4: esperar o 2º semestre acrescenta pouco acerto e consome metade do tempo de intervenção.</p></aside>
+</section>
+
+<!-- 17 ------------------------------------------------------------ PERFIS -->
+<section class="slide" data-title="Perfis de risco e de sucesso" data-by="p" data-part="Parte III · Perfis" data-src="Comunidade C9 (Gower); 95% dela está no grupo equivalente da distância por associação">
+  <p class="eyebrow" data-a style="--i:0">Perfis</p>
+  <h2 class="t" data-a style="--i:1"><span class="lt">As duas distâncias apontam o mesmo grupo na matrícula</span>Alunos mais velhos, com pais de escolaridade desconhecida, evadem 70%</h2>
+  <div class="g2 mt-l" style="grid-template-columns:1.1fr .9fr;gap:80px;align-items:start">
+    <div class="col" style="gap:34px">
+      <div data-a style="--i:2"><p class="body" style="margin-bottom:12px"><strong>Grupo de maior risco</strong> · 142 alunos</p><div class="stk"><span class="ev" style="--v:70;--i:0">70% evadiu</span><span class="fo" style="--v:30;--i:1">30%</span></div></div>
+      <div data-a style="--i:3"><p class="body" style="margin-bottom:12px"><strong>Todos os alunos</strong> · 3.630</p><div class="stk"><span class="ev" style="--v:39;--i:2">39%</span><span class="fo" style="--v:61;--i:3">61% formou</span></div></div>
+      <div class="legend" data-a style="--i:4"><span><i style="background:var(--coral)"></i>evadiu</span><span><i style="background:var(--green)"></i>formou</span></div>
+    </div>
+    <div class="col" style="gap:24px">
+      <div class="card" data-a="right" style="--i:5;padding:30px 34px"><p class="body"><strong>Por que o grafo ajuda aqui.</strong> Escolaridade desconhecida atinge só 4% dos alunos. A comunidade revela o grupo sem que alguém diga qual variável olhar.</p></div>
+      <div class="card g" data-a="right" style="--i:6;padding:30px 34px"><p class="body"><strong>Sucesso.</strong> No 1º semestre, três comunidades com <strong>4% a 8%</strong> de evasão: mulheres jovens, notas acima da média, bolsistas.</p></div>
+    </div>
+  </div>
+  <aside class="notes"><p>Pedro. No fim do 1º semestre aparecem grupos extremos: 395 alunos com notas baixas e 65% com mensalidade atrasada têm 83% de evasão (Gower); com associação, 267 alunos chegam a 96%.</p></aside>
+</section>
+
+<!-- 18 ------------------------------------------------------------ GEMEOS -->
+<section class="slide" data-title="Parecidos, destinos opostos" data-by="a" data-part="Parte III · Perfis" data-src="Pares vizinhos no grafo da matrícula (Gower, 15.560 pares) · Figura 4 do relatório">
+  <div class="g2" style="grid-template-columns:.95fr 1.05fr;gap:90px;align-items:center;height:100%">
+    <div>
+      <p class="eyebrow" data-a style="--i:0">Ponto de virada</p>
+      <h2 class="t" data-a style="--i:1;font-size:58px">Alunos que começaram iguais se separam no 1º semestre</h2>
+      <p class="body mt" data-a style="--i:2">39% das arestas da matrícula ligam alunos parecidos com desfechos opostos. Na matrícula, idade e nota de admissão quase não diferem.</p>
+      <div class="stat mt" data-a style="--i:3;--by:var(--ink)"><div class="n" style="font-size:96px">80%</div><p class="l" style="max-width:none">dos pares: quem evadiu foi pior nas aprovações do 1º semestre</p></div>
+    </div>
+    <div>
+      <div class="legend big" data-a style="--i:2;margin-bottom:34px"><span><i style="background:var(--coral)"></i>vizinho que evadiu</span><span><i style="background:var(--green)"></i>vizinho que se formou</span></div>
+      <div class="pairs" data-a style="--i:3">
+        <div><p class="pl">Aprovações no 1º semestre (média)</p>
+          <div class="pr"><div class="pb"><span class="ev" style="--v:34;--i:0"></span></div><span class="pv hl-c">2,7</span></div>
+          <div class="pr"><div class="pb"><span class="fo" style="--v:78;--i:1"></span></div><span class="pv hl-g">6,2</span></div></div>
+        <div><p class="pl">Nota média no 1º semestre (0 a 20)</p>
+          <div class="pr"><div class="pb"><span class="ev" style="--v:39;--i:2"></span></div><span class="pv hl-c">7,7</span></div>
+          <div class="pr"><div class="pb"><span class="fo" style="--v:63;--i:3"></span></div><span class="pv hl-g">12,6</span></div></div>
+        <div><p class="pl">Mensalidade atrasada</p>
+          <div class="pr"><div class="pb"><span class="ev" style="--v:29;--i:4"></span></div><span class="pv hl-c">29%</span></div>
+          <div class="pr"><div class="pb"><span class="fo" style="--v:1.2;--i:5"></span></div><span class="pv hl-g">1%</span></div></div>
+        <div><p class="pl">Bolsistas</p>
+          <div class="pr"><div class="pb"><span class="ev" style="--v:13;--i:6"></span></div><span class="pv hl-c">13%</span></div>
+          <div class="pr"><div class="pb"><span class="fo" style="--v:34;--i:7"></span></div><span class="pv hl-g">34%</span></div></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><p>Augusto. Confirma por outro caminho o achado 4: o 1º semestre é o ponto de virada. Escalas: aprovações sobre 8 disciplinas, nota sobre 20, porcentagens sobre 100. Ressalvas: os pares não são independentes e parte da diferença pode ser o próprio abandono acontecendo.</p></aside>
+</section>
+
+<!-- 19 ------------------------------------------------------------ HIPOTESES -->
+<section class="slide" data-title="Hipóteses respondidas" data-by="a" data-part="Parte III · Discussão" data-src="Seção 4.6 do relatório">
+  <p class="eyebrow" data-a style="--i:0">Respostas</p>
+  <h2 class="t" data-a style="--i:1">GraphSAGE para prever, Leiden para descrever</h2>
+  <div class="mt">
+    <div class="hyp" data-a style="--i:2"><span class="id">H1</span><span class="sym ok">✓</span><p><strong>Confirmada</strong>homofilia e comunidades muito acima do acaso</p><p class="small">V de 0,32 a 0,62; p = 0,001 nas seis combinações</p></div>
+    <div class="hyp" data-a style="--i:3"><span class="id">H2</span><span class="sym q">½</span><p><strong>Confirmada em parte</strong>associação melhora o Leiden, com clareza no 1º semestre</p><p class="small">V de 0,58 contra 0,46; GraphSAGE igual com as duas distâncias</p></div>
+    <div class="hyp" data-a style="--i:4"><span class="id">H3</span><span class="sym ok">✓</span><p><strong>Confirmada</strong>GraphSAGE supera o Leiden em 98% a 100% das divisões</p><p class="small">o Leiden, em troca, entrega grupos concretos e interpretáveis</p></div>
+  </div>
+  <aside class="notes"><p>Augusto. Fechar a lógica: começamos com três hipóteses, aqui está a resposta de cada uma com o número que a sustenta.</p></aside>
+</section>
+
+<!-- 20 ------------------------------------------------------------ CONCLUSOES -->
+<section class="slide" data-title="Conclusões" data-by="e" data-part="Conclusões" data-src="Relatório, Seção 5">
+  <p class="eyebrow" data-a style="--i:0">Conclusões</p>
+  <h2 class="t" data-a style="--i:1">Cada variação tem o seu papel, e o momento de agir é o fim do 1º semestre</h2>
+  <div class="g3 mt-l">
+    <div class="card a" data-a style="--i:2;padding:40px"><span class="tag a">Para prever</span><h3 class="mt-s">V2 e V4 · GraphSAGE</h3><p class="body" style="margin-top:12px">Melhores em todas as janelas, iguais com as duas distâncias.</p></div>
+    <div class="card v" data-a style="--i:3;padding:40px"><span class="tag v">Para descrever</span><h3 class="mt-s">V3 · Associação + Leiden</h3><p class="body" style="margin-top:12px">Comunidades mais coesas e que melhor separam os desfechos.</p></div>
+    <div class="card t" data-a style="--i:4;padding:40px"><span class="tag t">Quando agir</span><h3 class="mt-s">Fim do 1º semestre</h3><p class="body" style="margin-top:12px">Concentra o ganho de informação e ainda deixa tempo para intervir.</p></div>
+  </div>
+  <div class="frag mt"><div class="callout"><b class="k">Limitações</b><span>Associação não é causa. Uma instituição só, GraphSAGE sem ajuste fino, comparação só entre abordagens em grafo, e o 2º semestre registra em parte a evasão em curso. Os perfis servem para priorizar apoio, nunca para rotular alunos.</span></div></div>
+  <aside class="notes"><p>Erick. Melhorias: variar a resolução do Leiden, ajustar a GraphSAGE com validação aninhada, grafo indutivo para ingressantes novos e dados de outras instituições. Aplicação: o protótipo estima 35% a 42% de evasão entre os 794 alunos ainda matriculados.</p></aside>
+</section>
+
+<!-- 21 ------------------------------------------------------------ EQUIPE -->
+<section class="slide" data-title="Papéis da equipe" data-by="e" data-part="Equipe" data-src="Código, relatório e figuras: github.com/Erick-Bonifacio/student-dropout-success-graph">
+  <p class="eyebrow" data-a style="--i:0">Equipe</p>
+  <h2 class="t" data-a style="--i:1">Quem fez o quê</h2>
+  <div class="g5 mt-l">
+    <div class="person" data-a style="--i:2;--pc:#1F3A5F"><p class="r">Coordenador</p><h3>Erick A. Bonifácio</h3><p>Cronograma, integração dos artefatos, repositório e aderência às diretrizes.</p></div>
+    <div class="person" data-a style="--i:3;--pc:#2F6690"><p class="r">Modelador A</p><h3>Augusto Juiz Ribeiro</h3><p>Delimitação do problema, modelagem formal do grafo, hipóteses e revisão do relatório.</p></div>
+    <div class="person" data-a style="--i:4;--pc:#3A6B6E"><p class="r">Modelador B</p><h3>Pedro Henrique M. da Silva</h3><p>Curadoria dos dados, apoio à modelagem e interpretação dos perfis.</p></div>
+    <div class="person" data-a style="--i:5;--pc:#4A5568"><p class="r">Desenvolvedor A</p><h3>Wesley Batista Luz</h3><p>Arquitetura do protótipo e núcleo algorítmico.</p></div>
+    <div class="person" data-a style="--i:6;--pc:#7A5A45"><p class="r">Desenvolvedor B</p><h3>João Paulo da Costa Santos</h3><p>Implementação, testes e validação quantitativa.</p></div>
+  </div>
+  <aside class="notes"><p>Erick. Papéis conforme as diretrizes da disciplina.</p></aside>
+</section>
+
+<!-- 22 ------------------------------------------------------------ ENCERRAMENTO -->
+<section class="slide cover" data-title="Encerramento" data-by="e" style="--ox:50%;--oy:50%;padding:0;background:var(--navy);color:#fff">
+  <canvas class="net" data-net="dark" width="1000" height="1080" style="right:0;top:0;width:1000px;height:1080px"></canvas>
+  <div style="position:absolute;left:120px;right:120px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center">
+    <p class="eyebrow" data-a style="--i:0;color:#7FB0DB">Obrigado</p>
+    <h1 data-a style="--i:1;font-size:180px;line-height:.9;font-weight:700;letter-spacing:-.04em">Perguntas?</h1>
+    <p data-a style="--i:2;font:400 30px/1.45 var(--body);color:#C9D3E0;margin-top:40px">Erick A. Bonifácio · Augusto Juiz Ribeiro · Pedro Henrique Mendes da Silva · Wesley Batista Luz · João Paulo da Costa Santos</p>
+    <p data-a style="--i:3;font:400 23px/1.5 var(--mono);color:#9FB0C6;margin-top:50px">github.com/Erick-Bonifacio/student-dropout-success-graph</p>
+  </div>
+  <aside class="notes"><p>Encerramento.</p></aside>
+</section>
+
+</div></div>
+<div id="prog"></div>
+<div class="hint" id="hint">← → navegar · N notas · O visão geral · F tela cheia</div>
+<div id="ui" role="toolbar" aria-label="Controles da apresentação">
+  <button id="bPrev" aria-label="Slide anterior">←</button>
+  <span class="ct" id="ct">1 / 1</span>
+  <button id="bNext" aria-label="Próximo slide">→</button>
+  <span class="who" id="who"><i></i><span></span></span>
+  <button id="bNotes" aria-label="Notas de fala">Notas</button>
+  <button id="bOv" aria-label="Visão geral">Slides</button>
+  <button id="bFs" aria-label="Tela cheia">⛶</button>
+</div>
+<div id="notes" hidden><h4 id="nT"></h4><div id="nB"></div></div>
+<div id="ov" hidden><h4>Visão geral · clique para ir</h4><div class="gridov" id="ovG"></div></div>
+
+<script>
+(function(){
+  const stage=document.getElementById('stage');
+  const slides=[...stage.querySelectorAll('.slide')];
+  const N=slides.length;
+  const PEOPLE={
+    e:{n:'Erick A. Bonifácio',c:'#1F3A5F'},
+    a:{n:'Augusto Juiz Ribeiro',c:'#2F6690'},
+    p:{n:'Pedro Henrique Mendes da Silva',c:'#3A6B6E'},
+    w:{n:'Wesley Batista Luz',c:'#4A5568'},
+    j:{n:'João Paulo da Costa Santos',c:'#7A5A45'}
+  };
+  let cur=0;
+
+  slides.forEach((s,i)=>{
+    const p=PEOPLE[s.dataset.by]||PEOPLE.e;
+    s.style.setProperty('--by',p.c);
+    if(s.dataset.part){
+      const hd=document.createElement('div');hd.className='hd';
+      hd.innerHTML='<span class="part"><i></i>'+s.dataset.part+'</span><span class="run">SMAC03 · Evasão em grafos <b></b><span class="num">'+String(i+1).padStart(2,'0')+'</span></span>';
+      s.prepend(hd);
+      const ft=document.createElement('div');ft.className='ft';
+      ft.innerHTML='<span>'+(s.dataset.src||'')+'</span><span class="who">'+p.n.split(' ')[0]+'</span>';
+      s.append(ft);
+    }
+  });
+
+  // rede decorativa (kNN em pontos pseudoaleatórios), desenhada uma vez
+  function rng(seed){return function(){seed=(seed*1664525+1013904223)%4294967296;return seed/4294967296}}
+  document.querySelectorAll('canvas.net').forEach((cv,ci)=>{
+    const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,r=rng(7+ci*31),dark=cv.dataset.net==='dark';
+    const pts=[];for(let k=0;k<70;k++){pts.push([W*(.12+.84*r()),H*(.06+.88*r()),r()])}
+    ctx.lineWidth=1.4;
+    pts.forEach((a,ia)=>{
+      const d=pts.map((b,ib)=>[Math.hypot(a[0]-b[0],a[1]-b[1]),ib]).sort((x,y)=>x[0]-y[0]).slice(1,4);
+      d.forEach(([_,ib])=>{const b=pts[ib];ctx.strokeStyle=dark?'rgba(175,192,214,.16)':'rgba(47,95,138,.16)';ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke()});
+    });
+    pts.forEach(a=>{
+      const ev=a[2]<.39;
+      ctx.fillStyle=dark?(ev?'rgba(192,57,43,.55)':'rgba(175,192,214,.45)'):(ev?'rgba(192,57,43,.55)':'rgba(47,95,138,.35)');
+      ctx.beginPath();ctx.arc(a[0],a[1],ev?7:6,0,Math.PI*2);ctx.fill();
+    });
+  });
+
+  function fmt(v,dec){return v.toLocaleString('pt-BR',{minimumFractionDigits:dec,maximumFractionDigits:dec})}
+  function count(s){
+    s.querySelectorAll('[data-count]').forEach(el=>{
+      const to=parseFloat(el.dataset.count),dec=+(el.dataset.dec||0);
+      if(matchMedia('(prefers-reduced-motion:reduce)').matches){el.textContent=fmt(to,dec);return}
+      const t0=performance.now()+350,D=1300;
+      el.textContent=fmt(0,dec);
+      const tick=t=>{const p=Math.min(1,Math.max(0,(t-t0)/D));const e=1-Math.pow(1-p,4);el.textContent=fmt(to*e,dec);if(p<1&&s.classList.contains('is-active'))requestAnimationFrame(tick);else el.textContent=fmt(to,dec)};
+      requestAnimationFrame(tick);
+    });
+  }
+
+  const frags=s=>[...s.querySelectorAll('.frag')];
+  function go(n,dir,allFrags){
+    n=Math.max(0,Math.min(N-1,n));
+    if(n===cur&&slides[cur].classList.contains('is-active'))return;
+    stage.classList.toggle('back',dir<0);
+    const old=slides[cur];
+    old.classList.remove('is-active');old.classList.add('is-leaving');
+    setTimeout(()=>old.classList.remove('is-leaving'),650);
+    cur=n;const s=slides[cur];
+    frags(s).forEach(f=>f.classList.toggle('on',!!allFrags));
+    void s.offsetWidth;
+    s.classList.add('is-active');
+    count(s);
+    update();
+  }
+  function next(){
+    const f=frags(slides[cur]).find(x=>!x.classList.contains('on'));
+    if(f){f.classList.add('on');return}
+    if(cur<N-1)go(cur+1,1);
+  }
+  function prev(){
+    const on=frags(slides[cur]).filter(x=>x.classList.contains('on'));
+    if(on.length){on[on.length-1].classList.remove('on');return}
+    if(cur>0)go(cur-1,-1,true);
+  }
+  const who=document.getElementById('who'),ct=document.getElementById('ct'),prog=document.getElementById('prog');
+  const notes=document.getElementById('notes'),nT=document.getElementById('nT'),nB=document.getElementById('nB');
+  function update(){
+    const s=slides[cur],p=PEOPLE[s.dataset.by]||PEOPLE.e;
+    ct.textContent=(cur+1)+' / '+N;
+    who.querySelector('span').textContent=p.n.split(' ')[0];
+    document.documentElement.style.setProperty('--by',p.c);
+    prog.style.width=((cur+1)/N*100)+'%';
+    nT.textContent=(cur+1)+' · '+s.dataset.title+' · '+p.n;
+    const a=s.querySelector('aside.notes');nB.innerHTML=a?a.innerHTML:'<p>Sem notas.</p>';
+    try{history.replaceState(null,'','#'+(cur+1))}catch(e){}
+    [...document.querySelectorAll('#ovG button')].forEach((b,i)=>b.classList.toggle('cur',i===cur));
+  }
+  document.querySelectorAll('aside.notes').forEach(a=>a.hidden=true);
+
+  const ovG=document.getElementById('ovG'),ov=document.getElementById('ov');
+  slides.forEach((s,i)=>{const b=document.createElement('button');const p=PEOPLE[s.dataset.by]||PEOPLE.e;b.style.setProperty('--c',p.c);
+    b.innerHTML='<span>'+String(i+1).padStart(2,'0')+' · '+p.n.split(' ')[0]+'</span>'+s.dataset.title;
+    b.onclick=()=>{ov.hidden=true;go(i,i>=cur?1:-1,false)};ovG.append(b)});
+  const toggleOv=()=>{ov.hidden=!ov.hidden};
+  const toggleNotes=()=>{notes.hidden=!notes.hidden};
+  const fs=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}};
+
+  document.getElementById('bNext').onclick=next;
+  document.getElementById('bPrev').onclick=prev;
+  document.getElementById('bNotes').onclick=toggleNotes;
+  document.getElementById('bOv').onclick=toggleOv;
+  document.getElementById('bFs').onclick=fs;
+
+  addEventListener('keydown',e=>{
+    if(e.metaKey||e.ctrlKey||e.altKey)return;
+    const k=e.key;
+    if(['ArrowRight','PageDown',' ','Enter'].includes(k)){e.preventDefault();next()}
+    else if(['ArrowLeft','PageUp','Backspace'].includes(k)){e.preventDefault();prev()}
+    else if(k==='Home')go(0,-1);else if(k==='End')go(N-1,1);
+    else if(k==='n'||k==='N')toggleNotes();
+    else if(k==='o'||k==='O'||k==='Escape'&&!ov.hidden)toggleOv();
+    else if(k==='f'||k==='F')fs();
+  });
+  let tx=null;
+  addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
+  addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)(dx<0?next:prev)();tx=null});
+
+  function fit(){
+    const w=innerWidth,h=innerHeight,sc=Math.min(w/1920,h/1080);
+    stage.style.transform='translate('+(-960*sc)+'px,'+(-540*sc)+'px) scale('+sc+')';
+  }
+  addEventListener('resize',fit);fit();
+
+  const ui=document.getElementById('ui'),hint=document.getElementById('hint');let it;
+  const wake=()=>{ui.classList.remove('idle');clearTimeout(it);it=setTimeout(()=>{if(notes.hidden)ui.classList.add('idle')},2600)};
+  addEventListener('mousemove',wake);addEventListener('keydown',wake);wake();
+  setTimeout(()=>{hint.style.opacity=0},6000);
+
+  const h=parseInt((location.hash||'').slice(1));
+  cur=(h>=1&&h<=N)?h-1:0;
+  slides[cur].classList.add('is-active');count(slides[cur]);update();
+})();
+</script>
+<script>
+(function(){
+  const box=document.getElementById('demo'); if(!box) return;
+  const M={{FILE:demo.json}};
+  const st={jan:'1_matricula',dist:'gower',cor:'com'};
+  const f=(v,d)=>v.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+  function show(){
+    const k='demo_'+st.jan+'_'+st.dist;
+    box.querySelectorAll('.dview img').forEach(im=>im.classList.toggle('on',im.dataset.k===k+'_'+st.cor));
+    document.getElementById('dlg').hidden=st.cor!=='des';
+    const m=M[k];
+    document.getElementById('mC').textContent=m.com;
+    document.getElementById('mQ').textContent=f(m.Q,2);
+    document.getElementById('mE').textContent=m.emin+'–'+m.emax+'%';
+    document.getElementById('mV').textContent=f(m.V,2);
+    document.getElementById('mVn').textContent='V de Cramér (acaso ≤ '+f(m.Vnulo,2)+')';
+    document.getElementById('mF1L').textContent=f(m.f1L,3);
+    document.getElementById('mF1S').textContent=f(m.f1S,3);
+  }
+  box.querySelectorAll('.seg').forEach(g=>g.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    st[g.dataset.g]=b.dataset.v; show(); b.blur();
+  }));
+  show();
+})();
+</script>
