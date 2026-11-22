@@ -23,7 +23,8 @@ Usamos só **Dropout × Graduate** (3.630 alunos, 39% de evasão). *Enrolled* fi
 
 ```bash
 pip install -r requirements.txt jupyter
-jupyter notebook quatro_variacoes.ipynb
+jupyter notebook quatro_variacoes.ipynb   # fase 1
+jupyter notebook previsao_enrolled.ipynb  # fase 2
 ```
 
 `data.csv` precisa estar na mesma pasta do notebook. Roda inteiro em poucos minutos num CPU, sem cache. Os números vão para `resultados/` e as figuras para `figuras/`.
@@ -54,6 +55,9 @@ Em `figuras/`, cada uma em PDF (para o LaTeX, largura 6,3 pol., fonte 9 pt) e PN
 - `05_gower_vs_associacao_{janela}`: para onde vai cada comunidade do Gower na partição da Associação, com o ARI.
 - `06_gnn_f1`: F1 da GraphSAGE, do MLP sem arestas e da logística, nas 4 combinações.
 - `07_gnn_grafo_{janela}_{distancia}`: (a) risco previsto pela GNN fora da dobra; (b) erros da GNN, nas posições da figura 01.
+- `08_enrolled_calibracao_{janela}`: calibração nos alunos conhecidos (evasão observada × prevista), (a) Leiden e (b) GNN.
+- `09_enrolled_distribuicao_{janela}`: distribuição do risco previsto para os 794 *Enrolled*, (a) Leiden e (b) GNN.
+- `10_enrolled_grafo_{janela}_{distancia}`: os *Enrolled* no grafo dos 4.424 alunos, coloridos pelo risco previsto pela GNN.
 
 ## Principais achados
 
@@ -62,3 +66,9 @@ Em `figuras/`, cada uma em PDF (para o LaTeX, largura 6,3 pol., fonte 9 pt) e PN
 - **No fim do 1º semestre aparecem os grupos extremos:** notas baixas, a maioria (65%) com mensalidade atrasada (Gower: 395 alunos, 83% de evasão); a associação isola 267 alunos com 96% (notas 1,5 dp abaixo da média).
 - **A vizinhança não ajuda a prever.** A GraphSAGE empata com o mesmo modelo sem arestas, porque as arestas saem dos mesmos atributos que o modelo já recebe. O grafo serve para descrever perfis, não para prever melhor.
 - Associação não é causa: os perfis servem para oferecer apoio, nunca para rotular alunos.
+
+## Fase 2: o futuro dos Enrolled
+
+Em `previsao_enrolled.ipynb`, os 794 *Enrolled* entram no grafo como vértices sem rótulo e recebem uma probabilidade de evadir: no Leiden, a taxa de evasão da sua comunidade; na GNN (e no MLP de referência), o modelo treinado nos 3.630 alunos com desfecho. Somando as probabilidades, são esperadas 295/299 evasões pelo Leiden, 286/280 pela GNN e 292/299 pelo MLP na matrícula (Gower/Associação), e 285/285, 328/324 e 327/335 no fim do 1º semestre, ou seja, cerca de 35% a 42% dos *Enrolled*. A confiança é a calibração medida nos alunos conhecidos (ECE ≤ 0,03 em todos os métodos); vale se o padrão se mantiver.
+
+Números em `resultados/enrolled_resumo.csv` e `resultados/enrolled_calibracao.csv`. O Leiden é exato; a GNN e o MLP variam cerca de 0,01 entre execuções.
