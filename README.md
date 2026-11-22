@@ -17,12 +17,12 @@ Duas janelas de tempo: `1_matricula` (só o que se sabe na matrícula) e `3_fim_
 
 ## Duas classes
 
-Usamos só **Dropout × Graduate** (3.630 alunos). *Enrolled* fica fora: não é desfecho final, o aluno ainda está no curso.
+Usamos só **Dropout × Graduate** (3.630 alunos, 39% de evasão). *Enrolled* fica fora: não é desfecho final, o aluno ainda está no curso.
 
 ## Como rodar
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt jupyter
 jupyter notebook quatro_variacoes.ipynb
 ```
 
@@ -42,3 +42,11 @@ p = 0,001 em todos os testes do Leiden (o menor possível com 1.000 permutaçõe
 Leiden é reprodutível exatamente; os F1 da GNN variam cerca de 0,01 entre máquinas/versões do torch; a conclusão (GNN ≈ MLP) não depende disso.
 
 Números completos em `resultados/leiden_resumo.csv` e `resultados/gnn_resumo.csv`; composição das comunidades em `resultados/leiden_composicao.png`.
+
+## Principais achados
+
+- **Os perfis existem nas duas distâncias.** As comunidades separam a evasão muito além do acaso, e mais ainda depois do 1º semestre (V de 0,32–0,33 na matrícula, 0,46–0,58 no fim do 1º semestre).
+- **O risco na matrícula não depende da distância.** As duas apontam o mesmo perfil: alunos mais velhos com pais de escolaridade desconhecida, com cerca de 70% de evasão (Gower: 142 alunos, 70%; Associação: 166, 67%), contra 39% no geral. Ingressantes "maiores de 23" ficam perto de 60%.
+- **No fim do 1º semestre aparecem os grupos extremos:** notas baixas, a maioria (65%) com mensalidade atrasada (Gower: 395 alunos, 83% de evasão); a associação isola 267 alunos com 96% (notas 1,5 dp abaixo da média).
+- **A vizinhança não ajuda a prever.** A GraphSAGE empata com o mesmo modelo sem arestas, porque as arestas saem dos mesmos atributos que o modelo já recebe. O grafo serve para descrever perfis, não para prever melhor.
+- Associação não é causa: os perfis servem para oferecer apoio, nunca para rotular alunos.
