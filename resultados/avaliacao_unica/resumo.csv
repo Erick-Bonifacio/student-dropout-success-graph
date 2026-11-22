@@ -1,0 +1,13 @@
+janela,abordagem,F1 mean,F1 std,AUC mean,AUC std,revocação evasão mean,revocação evasão std
+1_matricula,V1 Gower + Leiden,0.6315,0.0165,0.6786,0.0176,0.6519,0.0313
+1_matricula,V3 Associação + Leiden,0.6345,0.0145,0.687,0.0164,0.6823,0.033
+1_matricula,V2 Gower + GraphSAGE,0.6748,0.0163,0.7298,0.0167,0.623,0.051
+1_matricula,V4 Associação + GraphSAGE,0.6742,0.014,0.7329,0.0149,0.6357,0.0415
+3_fim_1sem,V1 Gower + Leiden,0.7012,0.015,0.7626,0.017,0.6817,0.0218
+3_fim_1sem,V3 Associação + Leiden,0.7397,0.0128,0.8271,0.0124,0.7255,0.0252
+3_fim_1sem,V2 Gower + GraphSAGE,0.8629,0.0114,0.9248,0.0111,0.8096,0.025
+3_fim_1sem,V4 Associação + GraphSAGE,0.8649,0.0115,0.9229,0.0106,0.8092,0.0261
+4_fim_2sem,V1 Gower + Leiden,0.7625,0.0163,0.8328,0.0142,0.6621,0.0477
+4_fim_2sem,V3 Associação + Leiden,0.7604,0.0141,0.849,0.0126,0.7311,0.0332
+4_fim_2sem,V2 Gower + GraphSAGE,0.8936,0.0109,0.9459,0.0094,0.848,0.02
+4_fim_2sem,V4 Associação + GraphSAGE,0.8933,0.0096,0.9457,0.0089,0.8501,0.0186

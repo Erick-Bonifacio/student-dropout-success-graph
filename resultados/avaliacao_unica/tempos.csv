@@ -1,0 +1,12 @@
+etapa,1_matricula,3_fim_1sem,4_fim_2sem
+Leiden,0.425,0.431,0.295
+V1 Leiden (média por divisão),0.002,0.002,0.001
+V2 GraphSAGE (média por divisão),6.962,9.344,5.779
+V3 Leiden (média por divisão),0.002,0.002,0.001
+V4 GraphSAGE (média por divisão),7.777,8.221,5.319
+distância Associação,3.528,8.395,3.174
+distância Gower,12.727,21.633,17.853
+kNN mútuo,0.96,0.997,0.783
+ref. MLP (média por divisão),0.671,0.902,0.631
+ref. logística (média por divisão),0.028,0.031,0.027
+ref. variável isolada (média por divisão),0.096,0.137,0.119

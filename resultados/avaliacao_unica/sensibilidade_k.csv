@@ -1,0 +1,15 @@
+,,F1,F1,F1,AUC,AUC,AUC
+k,,20,40,60,20,40,60
+janela,abordagem,,,,,,
+1_matricula,V1 Gower + Leiden,0.633,0.631,0.624,0.673,0.679,0.676
+1_matricula,V2 Gower + GraphSAGE,0.674,0.675,0.673,0.729,0.73,0.73
+1_matricula,V3 Associação + Leiden,0.642,0.635,0.643,0.702,0.687,0.691
+1_matricula,V4 Associação + GraphSAGE,0.679,0.674,0.682,0.735,0.733,0.736
+3_fim_1sem,V1 Gower + Leiden,0.695,0.701,0.679,0.776,0.763,0.747
+3_fim_1sem,V2 Gower + GraphSAGE,0.86,0.863,0.859,0.924,0.925,0.924
+3_fim_1sem,V3 Associação + Leiden,0.738,0.74,0.731,0.824,0.827,0.817
+3_fim_1sem,V4 Associação + GraphSAGE,0.861,0.865,0.865,0.921,0.923,0.927
+4_fim_2sem,V1 Gower + Leiden,,0.762,,,0.833,
+4_fim_2sem,V2 Gower + GraphSAGE,,0.894,,,0.946,
+4_fim_2sem,V3 Associação + Leiden,,0.76,,,0.849,
+4_fim_2sem,V4 Associação + GraphSAGE,,0.893,,,0.946,

@@ -10,10 +10,38 @@ Cada aluno é um vértice; a aresta existe quando dois alunos estão entre os 40
 | **Associação** | variação 3                       | variação 4                                       |
 
 - **Leiden:** encontra comunidades sem olhar o desfecho e mede, com o V de Cramér e um teste de permutação (1.000 embaralhamentos), se as comunidades têm taxas de evasão diferentes.
-- **GNN:** compara GraphSAGE com um MLP de mesma arquitetura sem arestas (validação cruzada com 5 dobras). A diferença entre os dois diz se a vizinhança traz informação nova.
+- **GNN:** a GraphSAGE aprende com os atributos do aluno e a média dos vizinhos (2 camadas, 64 neurônios) e prevê o desfecho; é avaliada nas mesmas divisões 80/20 que o Leiden.
 - **Associação** é a *distância* por associação (preset `u_dep` do pacote R `manydist`), não regras de associação/Apriori.
 
-Duas janelas de tempo: `1_matricula` (só o que se sabe na matrícula) e `3_fim_1sem` (inclui financeiro e notas do 1º semestre).
+Três janelas da trajetória: `1_matricula` (só o que se sabe na matrícula), `3_fim_1sem` (inclui financeiro e notas do 1º semestre) e `4_fim_2sem` (inclui também o 2º semestre). O desfecho é sempre o alvo.
+
+## Avaliação única (régua comum para as 4 variações)
+
+As quatro variações são comparadas **no mesmo protocolo**: validação cruzada estratificada de 5 dobras
+(cada dobra = 80% treino, 20% teste), repetida 10 vezes, nas mesmas 50 divisões para todos os métodos.
+Métricas iguais para todos: F1 macro, AUC e revocação da evasão. O Leiden entra na comparação prevendo,
+para cada aluno de teste, a taxa de evasão da sua comunidade calculada só com o treino. O artigo compara só as
+quatro abordagens em grafo; `avaliacao_unica.py` ainda calcula referências sem grafo (variável isolada, logística, MLP),
+mas `resumo_avaliacao.py` as deixa fora da tabela, dos testes e da figura.
+
+```bash
+python avaliacao_unica.py --janela 1_matricula --k 40 --repeticoes 10
+python avaliacao_unica.py --janela 3_fim_1sem  --k 40 --repeticoes 10
+python avaliacao_unica.py --janela 4_fim_2sem  --k 40 --repeticoes 10
+python avaliacao_unica.py --janela 1_matricula --k 20 --repeticoes 2   # sensibilidade a k (idem 60 e 3_fim_1sem)
+python resumo_avaliacao.py        # tabela, testes estatísticos, sensibilidade, figura 14
+python analises_justificativa.py  # números que justificam as decisões de modelagem
+python metricas_leiden.py         # avaliação específica do Leiden (Q, V de Cramér, permutação, homofilia), 3 janelas
+python figuras_artigo.py          # figura 15 (grafo + composição) com a paleta única de src/cores.py
+python figuras_slides.py          # figuras dos slides em alta resolução (figuras/slides/)
+python slides/montar_slides.py    # monta slides/apresentacao_grafos.html e slides/demonstracao.html
+```
+
+Resultados em `resultados/avaliacao_unica/` e `resultados/justificativas.txt`. O núcleo do protótipo
+(dados, distâncias, grafo, Leiden, GraphSAGE) fica em `src/grafo_evasao.py` e é usado pelos scripts.
+O relatório final (template LaTeX do SIGAA, pronto para compilar) está em `relatorio_sigaa/`. As cores das figuras
+seguem uma paleta única (`src/cores.py`): evadiu = vermelho, formou = verde, Leiden = roxo, GraphSAGE = âmbar;
+Gower = linha cheia, associação = tracejada. Os slides da apresentação estão em `slides/apresentacao_grafos.html`.
 
 ## Duas classes
 
@@ -32,14 +60,26 @@ jupyter notebook estrutura_relacional.ipynb  # fase 3
 
 ## Resultados
 
-| Janela | Distância | Leiden: V de Cramér (comunidades) | F1 GraphSAGE | F1 MLP (sem arestas) |
-|--------|-----------|-----------------------------------|--------------|----------------------|
-| 1_matricula | Gower      | 0,32 (12) | 0,68 | 0,68 |
-| 1_matricula | Associação | 0,33 (16) | 0,67 | 0,68 |
-| 3_fim_1sem  | Gower      | 0,46 (11) | 0,86 | 0,86 |
-| 3_fim_1sem  | Associação | 0,58 (18) | 0,86 | 0,87 |
+**Avaliação única** (média nas mesmas 50 divisões 80/20; `resultados/avaliacao_unica/resumo.csv`):
 
-p = 0,001 em todos os testes do Leiden (o menor possível com 1.000 permutações). Comunidades com pelo menos 30 alunos. F1 macro, média das 5 dobras.
+| Abordagem | F1 / AUC matrícula | F1 / AUC fim 1º sem | F1 / AUC fim 2º sem |
+|-----------|--------------------|---------------------|---------------------|
+| V1 Gower + Leiden          | 0,631 / 0,679 | 0,701 / 0,763 | 0,762 / 0,833 |
+| V3 Associação + Leiden     | 0,634 / 0,687 | 0,740 / 0,827 | 0,760 / 0,849 |
+| V2 Gower + GraphSAGE       | 0,675 / 0,730 | 0,863 / 0,925 | 0,894 / 0,946 |
+| V4 Associação + GraphSAGE  | 0,674 / 0,733 | 0,865 / 0,923 | 0,893 / 0,946 |
+
+Friedman p < 0,001 nas três janelas. GraphSAGE supera Leiden em 98–100% das divisões; no Leiden, a associação supera o Gower (com clareza no 1º semestre); a GraphSAGE não muda com a distância.
+
+**Estrutura das comunidades** (Leiden, V de Cramér com o desfecho, nº de comunidades):
+
+| Janela | Gower | Associação |
+|--------|-------|------------|
+| 1_matricula | 0,32 (12) | 0,33 (16) |
+| 3_fim_1sem  | 0,46 (11) | 0,58 (18) |
+| 4_fim_2sem  | 0,61 (13) | 0,62 (16) |
+
+p = 0,001 em todos os testes do Leiden (o menor possível com 1.000 permutações). Comunidades com pelo menos 30 alunos.
 
 Leiden é reprodutível exatamente; os F1 da GNN variam cerca de 0,01 entre máquinas/versões do torch; a conclusão (GNN ≈ MLP) não depende disso.
 
@@ -68,7 +108,7 @@ Em `figuras/`, cada uma em PDF (para o LaTeX, largura 6,3 pol., fonte 9 pt) e PN
 - **Os perfis existem nas duas distâncias.** As comunidades separam a evasão muito além do acaso, e mais ainda depois do 1º semestre (V de 0,32–0,33 na matrícula, 0,46–0,58 no fim do 1º semestre).
 - **O risco na matrícula não depende da distância.** As duas apontam o mesmo perfil: alunos mais velhos com pais de escolaridade desconhecida, com cerca de 70% de evasão (Gower: 142 alunos, 70%; Associação: 166, 67%), contra 39% no geral. Ingressantes "maiores de 23" ficam perto de 60%.
 - **No fim do 1º semestre aparecem os grupos extremos:** notas baixas, a maioria (65%) com mensalidade atrasada (Gower: 395 alunos, 83% de evasão); a associação isola 267 alunos com 96% (notas 1,5 dp abaixo da média).
-- **A vizinhança não ajuda a prever.** A GraphSAGE empata com o mesmo modelo sem arestas, porque as arestas saem dos mesmos atributos que o modelo já recebe. O grafo serve para descrever perfis, não para prever melhor.
+- **GraphSAGE para prever, Leiden para descrever.** A GraphSAGE é a melhor das quatro variações em todas as janelas; o Leiden troca acerto individual por grupos concretos e interpretáveis.
 - Associação não é causa: os perfis servem para oferecer apoio, nunca para rotular alunos.
 
 ## Fase 2: o futuro dos Enrolled

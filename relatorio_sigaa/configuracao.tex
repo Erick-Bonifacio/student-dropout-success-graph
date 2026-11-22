@@ -1,0 +1,96 @@
+% Arquivo de configuracao do documento
+% Define os dados do autor e do trabalho
+
+% O template aceita dois campos de autor (A e B). Para os cinco integrantes,
+% o campo B recebe os demais nomes separados por \autsep, que vira virgula
+% na pagina do artigo e quebra de linha na capa (ver o fim deste arquivo).
+\newcommand{\autsep}{, }
+
+\autorNomeA{Erick A.}
+\autorSobrenomeA{Bonifácio}
+
+\autorNomeB{Augusto Juiz Ribeiro\autsep Pedro Henrique Mendes da Silva\autsep Wesley Batista Luz\autsep João Paulo da Costa}
+\autorSobrenomeB{Santos}
+
+% Contato do(s) autor(es): informar o email
+\emailAutorA{d2023005736@unifei.edu.br}
+\emailAutorB{d2023004523@unifei.edu.br, d2025010682@unifei.edu.br, d2023008237@unifei.edu.br, d2025009583@unifei.edu.br}
+
+% O titulo do trabalho
+\titulo{Perfis de evasão no ensino superior a partir de grafos de similaridade entre estudantes}
+
+% Professor da disciplina (campo "orientador" do template)
+\orientadorNome{Rafael de Magalhães Dias}
+\orientadorSobrenome{Frinhani (\textit{frinhani@unifei.edu.br})}
+
+% Sem coorientador
+\coorientadorNome{}
+\coorientadorSobrenome{}
+
+\txtOrientador{Professor}
+\txtCoorientador{Coorientador}
+
+% Ano de publicacao do trabalho
+\ano{2026}
+
+% Mes da entrega da versao final
+\mes{Novembro}
+
+% Local: nao altere
+\local{Itajubá}
+
+% Palavras chave (3 a 5)
+\palavraChaveA{Grafos}
+\palavraChaveB{Evasão estudantil}
+\palavraChaveC{Detecção de comunidades}
+\palavraChaveD{Redes neurais em grafos\ignorespaces}
+\palavraChaveE{Dados mistos}
+
+% Banca e data de defesa: nao se aplicam a projeto de disciplina
+% (a folha de aprovacao nao e gerada; ver o fim deste arquivo)
+\membroBancaA{}
+\membroBancaB{}
+\membroBancaC{}
+\membroBancaD{}
+\membroBancaE{}
+\dataDefesa{}
+\pdfAprovacao{}
+
+% Pacotes adicionais
+\usepackage{booktabs}
+\usepackage{tikz} % diagrama do fluxo (Figura 1)
+\usetikzlibrary{positioning}
+% Paleta unica das figuras (mesmas cores de src/cores.py)
+\definecolor{corLeiden}{HTML}{534AB7}
+\definecolor{corSage}{HTML}{E08A00}
+\definecolor{corEvadiu}{HTML}{C0392B}
+\definecolor{corFormou}{HTML}{27AE60}
+
+% Mais espaco para figuras de largura total no topo das paginas
+\setcounter{dbltopnumber}{3}
+\renewcommand{\dbltopfraction}{0.85}
+\renewcommand{\dblfloatpagefraction}{0.6}
+
+% ---------------------------------------------------------------------------
+% Ajustes para relatorio de disciplina (sem alterar imc.cls):
+% - o limite do projeto e de 9 paginas incluindo capa e contracapa, entao
+%   ficha catalografica, folha de aprovacao e pagina em branco (proprias de TCC)
+%   nao sao geradas;
+% - o tipo do trabalho na capa passa a ser o projeto da disciplina;
+% - o cabecalho das paginas impares lista os sobrenomes dos cinco autores.
+% Para voltar ao comportamento original do template, apague este bloco.
+% ---------------------------------------------------------------------------
+\makeatletter
+\renewcommand{\tipo}{Projeto da disciplina SMAC03 -- Grafos}
+\renewcommand{\maketitle}{%
+    \hypersetup{%
+        pdftitle={\@titulo},
+        pdfauthor={Erick A. Bonifacio, Augusto Juiz Ribeiro, Pedro Henrique Mendes da Silva, Wesley Batista Luz, Joao Paulo da Costa Santos},
+        pdfsubject={SMAC03 - Grafos - UNIFEI},
+    }%
+    {\renewcommand{\autsep}{\\}\twocolumn[\criaCapaDura]}%
+    \clearpage
+    \criaPaginaInicialArtigo%
+}
+\fancyhead[LO]{\slshape Bonifácio, Ribeiro, Silva, Luz e Santos}
+\makeatother
