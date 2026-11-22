@@ -21,18 +21,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src
 import grafo_evasao as ge  # noqa: E402
 
 
-def cv_logistica(X, y, seed=42):
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.metrics import f1_score, roc_auc_score
-    from sklearn.model_selection import StratifiedKFold
-    f1, auc = [], []
-    for tr, te in StratifiedKFold(5, shuffle=True, random_state=seed).split(X, y):
-        m = LogisticRegression(max_iter=3000, class_weight="balanced").fit(X[tr], y[tr])
-        p = m.predict_proba(X[te])[:, 1]
-        f1.append(f1_score(y[te], p > .5, average="macro")); auc.append(roc_auc_score(y[te], p))
-    return np.mean(f1), np.mean(auc)
-
-
 def main():
     from sklearn.metrics import normalized_mutual_info_score as NMI
     buf = io.StringIO()
@@ -71,11 +59,6 @@ def main():
         print(f"evadidos com 0 disciplinas inscritas no 2º sem: {(df.s2_enrolled[ev] == 0).mean():.1%} | formados: {(df.s2_enrolled[fo] == 0).mean():.1%}")
         print(f"evadidos com 0 aprovações no 2º sem: {(df.s2_approved[ev] == 0).mean():.1%} | formados: {(df.s2_approved[fo] == 0).mean():.1%}")
         print(f"evadidos com 0 aprovações no 1º sem: {(df.s1_approved[ev] == 0).mean():.1%} | formados: {(df.s1_approved[fo] == 0).mean():.1%}")
-        for nome, (c_, n_) in {"matrícula": ge.JANELAS["1_matricula"], "fim do 1º sem": ge.JANELAS["3_fim_1sem"],
-                               "fim do 2º sem": ge.JANELA_2SEM}.items():
-            X = ge.atributos(df, c_, n_).numpy()
-            f1, auc = cv_logistica(X, y)
-            print(f"logística, janela {nome}: F1 = {f1:.3f}, AUC = {auc:.3f}")
         q = pd.qcut(df.s2_approved.rank(method="first"), 5, labels=False)
         print(f"V de Cramér, aprovações 2º sem (quintis) x desfecho: {ge.cramer_v(q, y):.3f}")
 

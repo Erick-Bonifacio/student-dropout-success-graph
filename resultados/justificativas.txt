@@ -19,9 +19,6 @@ Gower matrícula COM curso: NMI(comunidade, curso) = 0.187 | NMI(comunidade, des
 evadidos com 0 disciplinas inscritas no 2º sem: 5.4% | formados: 3.4%
 evadidos com 0 aprovações no 2º sem: 51.2% | formados: 3.4%
 evadidos com 0 aprovações no 1º sem: 40.1% | formados: 3.5%
-logística, janela matrícula: F1 = 0.678, AUC = 0.736
-logística, janela fim do 1º sem: F1 = 0.869, AUC = 0.930
-logística, janela fim do 2º sem: F1 = 0.895, AUC = 0.949
 V de Cramér, aprovações 2º sem (quintis) x desfecho: 0.712
 
 == 5. Categorias raras (< 30 alunos) agrupadas em 'outros'
