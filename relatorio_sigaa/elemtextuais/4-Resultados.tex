@@ -30,9 +30,9 @@ Fim do 2º sem. & Gower    & 37.469 & 20,6 & 99,8\% & 0,27 & 4,1 & 0,65 & 13 & 8
 \label{fig-grafo}
 \end{figure*}
 
-Os seis grafos são esparsos (densidade de 0,48\% a 0,63\%). Com Gower, ficam praticamente conexos; com a distância por associação, de 4\% a 5\% dos alunos, com combinações raras de categorias, formam componentes próprios, porque essa distância pesa mais as categorias raras (Tabela~\ref{tab-grafo}). O agrupamento é de 50 a 80 vezes o de um grafo aleatório de mesma densidade, e o caminho médio é curto: são vizinhanças coesas, o que favorece a detecção de comunidades.
+Os seis grafos são esparsos (densidade de 0,48\% a 0,63\%), com agrupamento de 50 a 80 vezes o de um grafo aleatório de mesma densidade e caminho médio curto, o que favorece a detecção de comunidades. Com a associação, 4\% a 5\% dos alunos, com combinações raras de categorias, formam componentes próprios, efeito esperado de uma distância que pesa mais as categorias raras (Tabela~\ref{tab-grafo}).
 
-Na avaliação específica, as comunidades separam a evasão muito acima do acaso nas seis combinações: o V observado é de três a seis vezes o maior V obtido com o desfecho embaralhado. A separação cresce ao longo da trajetória (V de 0,32--0,33 na matrícula, 0,46--0,58 no 1º semestre e 0,61--0,62 no 2º), assim como a homofilia (de 61\% para 83\% das arestas entre alunos com o mesmo desfecho, contra 52\% ao acaso). A distância por associação gera comunidades mais coesas ($Q$ maior) em todas as janelas e mais separadas no 1º semestre. A Figura~\ref{fig-grafo} mostra a matrícula: as regiões de cor de (b) coincidem com as comunidades de (a), mesmo sem o desfecho ter entrado no grafo, e a evasão vai de 19\% (C6) a 70\% (C9).
+As comunidades separam a evasão nas seis combinações, com V de três a seis vezes o maior valor obtido ao embaralhar o desfecho. Na matrícula (Figura~\ref{fig-grafo}), as regiões de cor em (b) coincidem com as comunidades em (a), embora o desfecho não tenha entrado no grafo, e a evasão vai de 19\% (C6) a 70\% (C9). A separação e a homofilia crescem ao longo da trajetória (V de 0,32--0,33 para 0,61--0,62; arestas entre alunos com o mesmo desfecho de 61\% para 83\%, contra 52\% ao acaso), o que sugere que a semelhança medida passa a refletir o desempenho no curso, mais próximo do desfecho, e não só o perfil de entrada. A associação produz comunidades mais coesas em todas as janelas, mas só separa melhor os desfechos, com clareza, no 1º semestre (V de 0,58 contra 0,46); nas outras janelas, os valores de V praticamente coincidem.
 
 \subsection{Avaliação comum: as quatro variações na mesma régua}
 
@@ -63,28 +63,19 @@ Na avaliação específica, as comunidades separam a evasão muito acima do acas
 \label{fig-comparacao}
 \end{figure}
 
-A Tabela~\ref{tab-comparacao} e a Figura~\ref{fig-comparacao} mostram as quatro variações na mesma régua. Todas ficam muito acima do classificador trivial, e o teste de Friedman rejeita a igualdade das quatro variações nas três janelas ($p < 0{,}001$). Quatro padrões se repetem.
+Todas as variações ficam muito acima do classificador trivial, e o teste de Friedman rejeita a igualdade das quatro nas três janelas ($p < 0{,}001$; Tabela~\ref{tab-comparacao} e Figura~\ref{fig-comparacao}). A maior diferença está no método: com a mesma distância, a GraphSAGE supera o Leiden em 98\% a 100\% das divisões, por 0,04 de F1 na matrícula e por 0,13 a 0,16 depois. A distância, ao contrário, quase não afeta a GraphSAGE (diferença de até 0,003), mas afeta o Leiden, que ganha AUC com a associação nas três janelas (0,01, 0,06 e 0,02, em 66\%, 100\% e 90\% das divisões) e F1 apenas no 1º semestre (0,04). Uma explicação compatível com a Equação~\ref{eq-sage} é que a GraphSAGE combina os atributos do próprio aluno com os dos vizinhos, de modo que mudanças na vizinhança são em parte compensadas, enquanto o Leiden depende só das arestas, e qualquer mudança na métrica altera as comunidades. Pelo mesmo motivo, este desenho não separa quanto da vantagem da GraphSAGE vem da vizinhança e quanto dos atributos individuais.
 
-\textbf{(i) O método pesa mais que a distância.} Com a mesma distância, a GraphSAGE supera o Leiden em 98\% a 100\% das divisões, em todas as janelas: por 0,04 de F1 na matrícula e por 0,13 a 0,16 depois. O Leiden resume cada aluno em uma de 11 a 18 comunidades, ganhando interpretabilidade e perdendo resolução individual.
+A diferença entre os métodos também muda com a janela. Na matrícula, o Leiden encontra mais evadidos (revocação de 0,65--0,68 contra 0,62--0,64), com F1 menor: o limiar pela taxa da comunidade marca grupos inteiros como risco, o que aumenta acertos e alarmes ao mesmo tempo. A partir do 1º semestre, a GraphSAGE encontra de 81\% a 85\% dos evadidos, contra 66\% a 73\%. O ganho de informação se concentra nessa passagem: o F1 da GraphSAGE sobe 0,19 da matrícula ao 1º semestre e 0,03 depois, e esse último ganho é em parte inflado pela evasão já em curso registrada no 2º semestre. O padrão é coerente com o peso que \cite{tinto1975} atribui à integração acadêmica, aqui observada pelo desempenho, em relação ao perfil de entrada.
 
-\textbf{(ii) A distância só importa para o Leiden.} Com a associação, o Leiden ganha AUC em todas as janelas: 0,01 na matrícula (66\% das divisões), 0,06 no 1º semestre (100\%) e 0,02 no 2º (90\%); no F1, o ganho só aparece no 1º semestre (0,04). Entre as duas GraphSAGE, a diferença não passa de 0,003.
-
-\textbf{(iii) Na matrícula, o Leiden encontra mais evadidos.} Com menos informação, a atribuição pela comunidade tem revocação maior que a GraphSAGE (0,65--0,68 contra 0,62--0,64), embora com F1 menor: o limiar pela taxa da comunidade marca como risco grupos inteiros. A partir do 1º semestre, a GraphSAGE encontra de 81\% a 85\% dos evadidos, contra 66\% a 73\% do Leiden. Na avaliação específica, a GraphSAGE é estável: desvio-padrão de 0,010 a 0,016 em F1 entre as divisões, diferença de no máximo 0,003 entre as duas distâncias e de no máximo 0,008 com $k = 20$ e $k = 60$.
-
-\textbf{(iv) O 1º semestre concentra o ganho.} Da matrícula para o 1º semestre, o F1 da GraphSAGE sobe 0,19; do 1º para o 2º, só 0,03. Esperar o 2º semestre acrescenta pouco acerto e consome metade do tempo de intervenção.
+A GraphSAGE é estável, com desvio-padrão de F1 de 0,010 a 0,016 entre as divisões. Com $k = 20$ e $k = 60$ (10 divisões cada, na matrícula e no 1º semestre), F1 e AUC das quatro variações mudam no máximo 0,022, e a ordem entre elas se mantém.\label{ssec:robustez}
 
 \subsection{Perfis identificados}
 
-\textbf{Matrícula.} As duas distâncias apontam o mesmo grupo de maior risco. Com Gower (C9 na Figura~\ref{fig-grafo}), são 142 alunos com 70\% de evasão: 83\% têm mãe ou pai com escolaridade desconhecida e 61\% têm 25 anos ou mais. Com associação, o grupo tem 166 alunos e 67\% de evasão, e 95\% dos alunos de C9 estão nele, embora as partições concordem só em parte no geral (ARI de 0,33). A escolaridade desconhecida atinge só 4\% dos alunos; a comunidade revela esse grupo sem que se indique qual variável olhar. Seguem 534 alunos mais velhos que ingressaram pelo concurso para maiores de 23 anos (C0, 59\%) e 161 que já têm curso superior (C8, 59\%). \textbf{Fim do 1º semestre.} Surgem grupos extremos: com Gower, 395 alunos com notas e aprovações cerca de 1 desvio-padrão abaixo da média, 65\% deles com mensalidade atrasada, têm 83\% de evasão; com associação, 267 alunos com notas 1,5 desvio-padrão abaixo da média chegam a 96\%. \textbf{Sucesso.} Na matrícula, as comunidades de menor evasão (19\% a 26\%) reúnem alunos mais jovens, quase todos deslocados e, em geral, mulheres que ingressaram pela 1ª fase do contingente geral. No 1º semestre, a associação isola três comunidades com 4\% a 8\% de evasão: mulheres jovens com notas acima da média, todas bolsistas em duas delas.
-
-\subsection{Robustez}
-\label{ssec:robustez}
-
-Com $k = 20$ e $k = 60$ (10 divisões 80/20 cada, na matrícula e no 1º semestre), o F1 e a AUC de cada variação mudam no máximo 0,022; a GraphSAGE continua acima do Leiden, e a associação continua à frente no Leiden. Entre as distâncias, as partições concordam só em parte (ARI de 0,33, 0,21 e 0,26 nas três janelas), mas o grupo de maior risco da matrícula é o mesmo. Os achados não dependem do $k$ nem da distância.
+Na matrícula, as duas distâncias apontam o mesmo grupo de maior risco, embora as partições concordem só em parte (ARI de 0,33; 0,21 e 0,26 nas outras janelas). Com Gower (C9 na Figura~\ref{fig-grafo}), são 142 alunos com 70\% de evasão, dos quais 83\% têm mãe ou pai com escolaridade desconhecida e 61\% têm 25 anos ou mais; com associação, o grupo tem 166 alunos e 67\% de evasão e contém 95\% dos alunos de C9. A escolaridade desconhecida atinge só 4\% dos alunos e dificilmente seria escolhida de antemão como indicador; a comunidade revela o grupo pela combinação de atributos, e a sua estabilidade entre as distâncias sugere que ele não é um artefato da métrica. Ao fim do 1º semestre, os grupos ficam mais extremos: com Gower, 395 alunos com notas e aprovações cerca de 1 desvio-padrão abaixo da média, 65\% deles com mensalidade atrasada, têm 83\% de evasão; com associação, 267 alunos com notas 1,5 desvio-padrão abaixo chegam a 96\%. Os perfis de sucesso são pouco marcados na matrícula (19\% a 26\% de evasão, alunos mais jovens e deslocados) e ficam nítidos no 1º semestre, quando a associação isola três comunidades com 4\% a 8\% de evasão, de mulheres jovens com notas acima da média.
 
 \subsection{Perfis semelhantes, destinos diferentes}
 
-Na matrícula, 39\% das arestas (15.560 pares com Gower e 16.268 com associação) ligam alunos parecidos que tiveram desfechos opostos. A Figura~\ref{fig-gemeos} compara, em cada par, o aluno que evadiu com o que se formou. Nos controles (idade e nota de admissão), os dois quase não diferem. No 1º semestre, o que evadiu teve 2,7 aprovações contra 6,2, nota média 7,7 contra 12,6, 29\% contra 1\% com mensalidade atrasada e 13\% contra 34\% de bolsistas, e foi pior em cerca de 80\% dos pares; no 2º semestre, a distância aumenta. Isso confirma, por outro caminho, o padrão (iv): o 1º semestre é o ponto de virada. Ressalvas: os pares não são independentes (um aluno aparece em vários) e parte da diferença pode ser o próprio abandono em curso.
+Na matrícula, 39\% das arestas (15.560 pares com Gower e 16.268 com associação) ligam alunos parecidos com desfechos opostos, o que limita qualquer acompanhamento baseado apenas no perfil de entrada. Comparando, em cada par, o aluno que evadiu com o que se formou (Figura~\ref{fig-gemeos}), nos controles (idade e nota de admissão) os dois quase não diferem. No 1º semestre, o que evadiu teve 2,7 aprovações contra 6,2, nota média 7,7 contra 12,6, 29\% contra 1\% com mensalidade atrasada e 13\% contra 34\% de bolsistas, e foi pior nas aprovações em cerca de 80\% dos pares; no 2º semestre, a distância aumenta. A divergência aparece justamente onde a avaliação comum indicou o maior ganho de informação. Como os pares não são independentes (um aluno aparece em vários) e parte da diferença pode ser o próprio abandono em curso, a análise mostra quando os alunos se separam, não por quê.
 
 \begin{figure}[!ht]
 \centering
@@ -93,6 +84,38 @@ Na matrícula, 39\% das arestas (15.560 pares com Gower e 16.268 com associaçã
 \label{fig-gemeos}
 \end{figure}
 
+\subsection{Alunos ainda matriculados}
+\label{ssec:enrolled}
+
+Os 794 \textit{Enrolled} seguiam matriculados ao fim da duração normal do curso. Para aplicar o protótipo a alunos sem desfecho, refizemos o grafo da matrícula com os 4.424 alunos ($k = 40$), com os \textit{Enrolled} como vértices sem rótulo (notebook \texttt{previsao\_enrolled}). O Leiden atribui a cada um a taxa suavizada da sua comunidade entre os conhecidos; a GraphSAGE, treinada nos conhecidos, dá a média de 5 modelos, com a probabilidade corrigida do peso de classes para a taxa real (39\%). AUC e erro de calibração esperado (ECE) são medidos nos conhecidos, fora da dobra; as evasões esperadas somam as probabilidades dos \textit{Enrolled} (Tabela~\ref{tab-enrolled}, Figura~\ref{fig-enrolled}).
+
+\begin{table}[!ht]
+\centering
+\caption{\textit{Enrolled} na matrícula: AUC e ECE nos conhecidos, evasões esperadas e alunos com $P \geq 0{,}7$.}
+\label{tab-enrolled}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+\textbf{Método} & \textbf{Distância} & AUC & ECE & \textbf{Esperadas} & $P \geq 0{,}7$ \\
+\midrule
+\textcolor{corLeiden}{Leiden}    & Gower      & 0,68 & 0,016 & 295 (37\%) & 0 \\
+                                 & Associação & 0,69 & 0,017 & 299 (38\%) & 0 \\
+\textcolor{corSage}{GraphSAGE}   & Gower      & 0,73 & 0,036 & 284 (36\%) & 24 \\
+                                 & Associação & 0,74 & 0,021 & 289 (36\%) & 23 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=\columnwidth]{figuras/09_enrolled_distribuicao_1_matricula.pdf}
+\caption{Risco previsto na matrícula para os 794 \textit{Enrolled}: (a) Leiden, em degraus (a comunidade toda recebe a mesma taxa); (b) GraphSAGE. Cheia: Gower; tracejada: associação.}
+\label{fig-enrolled}
+\end{figure}
+
+Os quatro caminhos convergem em 36\% a 38\% de evasão esperada (39\% entre os conhecidos), e os dois métodos são calibrados nos conhecidos (ECE $\leq 0{,}04$). No Leiden, a calibração vem da construção (a probabilidade é a taxa do grupo), mas ele não separa extremos: nenhum \textit{Enrolled} chega a 0,7. A GraphSAGE ordena melhor e já na matrícula marca 23 a 24 alunos com $P \geq 0{,}7$ e cerca de 340 com $P \leq 0{,}3$. Ressalvas: os \textit{Enrolled} são atrasados, ausentes do treino e já passaram da duração normal do curso, o que o perfil da matrícula não registra; a estimativa vale se o padrão dos conhecidos valer para eles. Com AUC perto de 0,7, ela serve para priorizar o primeiro contato, nunca para rotular alunos.
+
 \subsection{Discussão e dificuldades}
 
-\textbf{H1 se confirma}: o grafo é homofílico e as comunidades separam a evasão muito acima do acaso nas três janelas, nas duas distâncias ($p = 0{,}001$ em todos os testes de permutação). \textbf{H2 se confirma em parte}: a associação gera comunidades mais coesas ($Q$ maior) em todas as janelas, mas melhora a separação dos desfechos com clareza só no 1º semestre (V de 0,58 contra 0,46; AUC 0,06 maior em todas as divisões); nas outras janelas o ganho é marginal, e a GraphSAGE não muda com a distância. \textbf{H3 se confirma}: a GraphSAGE supera o Leiden em 98\% a 100\% das divisões, nas três janelas. Os dois métodos se complementam: a GraphSAGE ordena o risco de cada aluno, e o Leiden organiza os alunos em grupos concretos e interpretáveis, como o de pais com escolaridade desconhecida. O custo é viável: a matriz de distâncias ocupa 50 MB ($O(n^2)$) e leva de 3 a 22 s; o kNN, cerca de 1 s; o Leiden, menos de 1 s; e cada treino da GraphSAGE, de 5 a 9 s (CPU, 1 \textit{thread}). A avaliação comum completa (50 divisões) leva cerca de 15 minutos por janela. As dificuldades foram reimplementar e validar a distância por associação em Python, tornar o Leiden reprodutível (kNN determinístico e semente fixa) e o custo de repetir a avaliação 50 vezes em três janelas.
+H1 se confirma: o grafo é homofílico e as comunidades separam a evasão acima do acaso em todas as combinações ($p = 0{,}001$). H2 se confirma em parte: a associação gera comunidades mais coesas em todas as janelas, mas só melhora com clareza a separação dos desfechos no 1º semestre e não altera a GraphSAGE; o efeito da distância depende, portanto, do método e da janela. Uma explicação possível, não testada aqui, é que a divisão de cada variável pela sua distância média dê às medidas de desempenho, mais ligadas ao desfecho, um peso que a Gower dilui entre as muitas variáveis categóricas, e que, no 2º semestre, com o dobro dessas medidas, as duas distâncias já as captem. H3 se confirma: a GraphSAGE supera o Leiden em 98\% a 100\% das divisões. Isso não torna o Leiden dispensável, porque ele troca precisão individual por grupos interpretáveis. As dificuldades foram validar a distância por associação reimplementada em Python, tornar o Leiden reprodutível e o custo das 50 repetições.

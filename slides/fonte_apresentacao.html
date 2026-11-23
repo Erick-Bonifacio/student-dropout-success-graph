@@ -615,7 +615,7 @@ canvas.net{position:absolute;pointer-events:none}
       </div>
     </div>
     <div data-a="scale" style="--i:3">
-      <img class="figimg" alt="F1 e AUC das quatro variações e das referências nas três janelas" src="data:image/png;base64,{{IMG:comparacao}}">
+      <img class="figimg" alt="F1 e AUC das quatro variações nas três janelas" src="data:image/png;base64,{{IMG:comparacao}}">
       <p class="cap"><b>Figura 3</b> · F1 e AUC ao longo das três janelas; linha cheia: Gower, tracejada: associação</p>
     </div>
   </div>
@@ -657,7 +657,7 @@ canvas.net{position:absolute;pointer-events:none}
 <section class="slide" data-title="Parecidos, destinos opostos" data-by="a" data-part="Parte III · Perfis" data-src="Pares vizinhos no grafo da matrícula (Gower, 15.560 pares) · Figura 4 do relatório">
   <div class="g2" style="grid-template-columns:.95fr 1.05fr;gap:90px;align-items:center;height:100%">
     <div>
-      <p class="eyebrow" data-a style="--i:0">Ponto de virada</p>
+      <p class="eyebrow" data-a style="--i:0">Trajetória</p>
       <h2 class="t" data-a style="--i:1;font-size:58px">Alunos que começaram iguais se separam no 1º semestre</h2>
       <p class="body mt" data-a style="--i:2">39% das arestas da matrícula ligam alunos parecidos com desfechos opostos. Na matrícula, idade e nota de admissão quase não diferem.</p>
       <div class="stat mt" data-a style="--i:3;--by:var(--ink)"><div class="n" style="font-size:96px">80%</div><p class="l" style="max-width:none">dos pares: quem evadiu foi pior nas aprovações do 1º semestre</p></div>
@@ -680,7 +680,7 @@ canvas.net{position:absolute;pointer-events:none}
       </div>
     </div>
   </div>
-  <aside class="notes"><p>Augusto. Confirma por outro caminho o achado 4: o 1º semestre é o ponto de virada. Escalas: aprovações sobre 8 disciplinas, nota sobre 20, porcentagens sobre 100. Ressalvas: os pares não são independentes e parte da diferença pode ser o próprio abandono acontecendo.</p></aside>
+  <aside class="notes"><p>Augusto. A divergência aparece no 1º semestre, onde a avaliação comum mostrou o maior ganho de informação. Mostra quando os alunos se separam, não por quê. Escalas: aprovações sobre 8 disciplinas, nota sobre 20, porcentagens sobre 100. Ressalvas: os pares não são independentes e parte da diferença pode ser o próprio abandono acontecendo.</p></aside>
 </section>
 
 <!-- 19 ------------------------------------------------------------ HIPOTESES -->
@@ -695,17 +695,38 @@ canvas.net{position:absolute;pointer-events:none}
   <aside class="notes"><p>Augusto. Fechar a lógica: começamos com três hipóteses, aqui está a resposta de cada uma com o número que a sustenta.</p></aside>
 </section>
 
+<!-- 19b ---------------------------------------------------------- ENROLLED -->
+<section class="slide" data-title="Alunos ainda matriculados" data-by="w" data-part="Parte III · Aplicação" data-src="Seção 4.5 e Figura 5 do relatório">
+  <div class="g2" style="grid-template-columns:1.1fr .9fr;gap:70px;align-items:center;height:100%">
+    <div>
+      <p class="eyebrow" data-a style="--i:0">Aplicação · 794 alunos sem desfecho</p>
+      <h2 class="t" data-a style="--i:1;font-size:50px">Pela matrícula, cerca de 290 dos 794 alunos ainda matriculados evadiriam</h2>
+      <div class="stat mt-s" data-a style="--i:2;--by:var(--ink);margin-top:20px"><div class="n" style="font-size:80px">36–38%</div><p class="l" style="max-width:none">de evasão esperada nos quatro caminhos (284 a 299 alunos), contra 39% entre os conhecidos</p></div>
+      <div class="g2" style="gap:28px;margin-top:26px">
+        <div class="card v" data-a style="--i:3;padding:22px 28px"><span class="tag v">Leiden</span><p class="body" style="margin-top:12px"><strong>Quais perfis acompanhar.</strong> Taxa da comunidade, calibrada, mas ninguém chega a 0,7.</p></div>
+        <div class="card a" data-a style="--i:4;padding:22px 28px"><span class="tag a">GraphSAGE</span><p class="body" style="margin-top:12px"><strong>Por quais alunos começar.</strong> AUC 0,73–0,74; <strong>23–24</strong> com P&nbsp;≥&nbsp;0,7 e cerca de <strong>340</strong> com P&nbsp;≤&nbsp;0,3.</p></div>
+      </div>
+      <div class="frag" style="margin-top:22px"><div class="callout"><b class="k">Sem gabarito</b><span>São alunos atrasados, fora do treino. Serve para priorizar o primeiro contato, nunca para rotular.</span></div></div>
+    </div>
+    <div data-a="scale" style="--i:3">
+      <img class="figimg" alt="Distribuição do risco previsto na matrícula para os 794 Enrolled, pelo Leiden e pela GraphSAGE" style="max-height:680px;width:auto;margin:0 auto" src="data:image/png;base64,{{IMG:enrolled}}">
+      <p class="cap"><b>Figura 5</b> · Risco previsto: (a) Leiden; (b) GraphSAGE (GNN)</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Wesley. Os Enrolled ainda estavam matriculados ao fim da duração normal do curso. Refizemos o grafo da matrícula com todos os 4.424 alunos; eles entram sem rótulo, então não há vazamento. Leiden: taxa suavizada da comunidade. GraphSAGE: média de 5 modelos, probabilidade corrigida para a taxa real de 39%. A confiança é medida nos alunos conhecidos: os dois são calibrados (ECE ≤ 0,04). Ressalva: eles já passaram da duração normal do curso, o que o perfil da matrícula não registra; a estimativa vale se o padrão dos conhecidos valer para eles.</p></aside>
+</section>
+
 <!-- 20 ------------------------------------------------------------ CONCLUSOES -->
 <section class="slide" data-title="Conclusões" data-by="e" data-part="Conclusões" data-src="Relatório, Seção 5">
   <p class="eyebrow" data-a style="--i:0">Conclusões</p>
-  <h2 class="t" data-a style="--i:1">Cada variação tem o seu papel, e o momento de agir é o fim do 1º semestre</h2>
+  <h2 class="t" data-a style="--i:1">Cada variação tem o seu papel, e o fim do 1º&nbsp;semestre concentra o ganho de informação</h2>
   <div class="g3 mt-l">
     <div class="card a" data-a style="--i:2;padding:40px"><span class="tag a">Para prever</span><h3 class="mt-s">V2 e V4 · GraphSAGE</h3><p class="body" style="margin-top:12px">Melhores em todas as janelas, iguais com as duas distâncias.</p></div>
     <div class="card v" data-a style="--i:3;padding:40px"><span class="tag v">Para descrever</span><h3 class="mt-s">V3 · Associação + Leiden</h3><p class="body" style="margin-top:12px">Comunidades mais coesas e que melhor separam os desfechos.</p></div>
     <div class="card t" data-a style="--i:4;padding:40px"><span class="tag t">Quando agir</span><h3 class="mt-s">Fim do 1º semestre</h3><p class="body" style="margin-top:12px">Concentra o ganho de informação e ainda deixa tempo para intervir.</p></div>
   </div>
-  <div class="frag mt"><div class="callout"><b class="k">Limitações</b><span>Associação não é causa. Uma instituição só, GraphSAGE sem ajuste fino, comparação só entre abordagens em grafo, e o 2º semestre registra em parte a evasão em curso. Os perfis servem para priorizar apoio, nunca para rotular alunos.</span></div></div>
-  <aside class="notes"><p>Erick. Melhorias: variar a resolução do Leiden, ajustar a GraphSAGE com validação aninhada, grafo indutivo para ingressantes novos e dados de outras instituições. Aplicação: o protótipo estima 35% a 42% de evasão entre os 794 alunos ainda matriculados.</p></aside>
+  <div class="frag mt"><div class="callout"><b class="k">Limitações</b><span>Associação não é causa. Uma instituição só, GraphSAGE sem ajuste fino, e o 2º semestre registra em parte a evasão em curso. Os perfis servem para priorizar apoio, nunca para rotular alunos.</span></div></div>
+  <aside class="notes"><p>Erick. Melhorias: variar a resolução do Leiden, ajustar a GraphSAGE com validação aninhada, grafo indutivo para ingressantes novos e dados de outras instituições. Aplicação: retomar o slide anterior, Leiden para os perfis e GraphSAGE para a ordem de contato.</p></aside>
 </section>
 
 <!-- 21 ------------------------------------------------------------ EQUIPE -->
